@@ -7,6 +7,7 @@ DATABASE_URL to a Postgres URL - no code change required.
 
 from datetime import timedelta
 from pathlib import Path
+from urllib.parse import urlparse
 
 import dj_database_url
 from dotenv import load_dotenv
@@ -43,6 +44,30 @@ def merge_unique(*groups: list[str]) -> list[str]:
 
 
 RAILWAY_PUBLIC_DOMAIN = os.getenv("RAILWAY_PUBLIC_DOMAIN", "").strip()
+RAILWAY_STATIC_URL = os.getenv("RAILWAY_STATIC_URL", "").strip()
+RAILWAY_ENVIRONMENT = os.getenv("RAILWAY_ENVIRONMENT", "").strip()
+
+ON_RAILWAY = bool(
+    RAILWAY_ENVIRONMENT
+    or RAILWAY_PUBLIC_DOMAIN
+    or RAILWAY_STATIC_URL
+    or os.getenv("RAILWAY_PROJECT_ID")
+    or os.getenv("RAILWAY_SERVICE_ID")
+    or "railway.app" in os.getenv("DATABASE_URL", "")
+)
+
+
+def railway_public_host() -> str:
+    if RAILWAY_PUBLIC_DOMAIN:
+        return RAILWAY_PUBLIC_DOMAIN
+    if RAILWAY_STATIC_URL:
+        parsed = urlparse(
+            RAILWAY_STATIC_URL
+            if "://" in RAILWAY_STATIC_URL
+            else f"https://{RAILWAY_STATIC_URL}"
+        )
+        return parsed.hostname or ""
+    return ""
 
 # ---------------------------------------------------------------------------
 # Core
@@ -54,11 +79,14 @@ SECRET_KEY = os.getenv(
 )
 
 # On Railway, default to production mode unless DEBUG is set explicitly.
-DEBUG = env_bool("DEBUG", False if RAILWAY_PUBLIC_DOMAIN else True)
+DEBUG = env_bool("DEBUG", False if ON_RAILWAY else True)
 
 ALLOWED_HOSTS = env_list("ALLOWED_HOSTS", "localhost,127.0.0.1,[::1]")
-if RAILWAY_PUBLIC_DOMAIN:
-    ALLOWED_HOSTS = merge_unique(ALLOWED_HOSTS, [RAILWAY_PUBLIC_DOMAIN])
+if ON_RAILWAY:
+    ALLOWED_HOSTS = merge_unique(ALLOWED_HOSTS, [".up.railway.app"])
+_railway_host = railway_public_host()
+if _railway_host:
+    ALLOWED_HOSTS = merge_unique(ALLOWED_HOSTS, [_railway_host])
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -211,22 +239,21 @@ CORS_ALLOWED_ORIGINS = env_list(
     "CORS_ALLOWED_ORIGINS",
     "http://localhost:5173,http://127.0.0.1:5173",
 )
-if RAILWAY_PUBLIC_DOMAIN:
-    CORS_ALLOWED_ORIGINS = merge_unique(
-        CORS_ALLOWED_ORIGINS,
-        [f"https://{RAILWAY_PUBLIC_DOMAIN}"],
-    )
 CORS_ALLOW_CREDENTIALS = True
 
 CSRF_TRUSTED_ORIGINS = env_list(
     "CSRF_TRUSTED_ORIGINS",
     "http://localhost:5173,http://127.0.0.1:5173",
 )
-if RAILWAY_PUBLIC_DOMAIN:
-    CSRF_TRUSTED_ORIGINS = merge_unique(
-        CSRF_TRUSTED_ORIGINS,
-        [f"https://{RAILWAY_PUBLIC_DOMAIN}"],
+if ON_RAILWAY:
+    _railway_origin = (
+        f"https://{_railway_host}"
+        if _railway_host
+        else (RAILWAY_STATIC_URL.rstrip("/") if RAILWAY_STATIC_URL.startswith("http") else "")
     )
+    if _railway_origin:
+        CORS_ALLOWED_ORIGINS = merge_unique(CORS_ALLOWED_ORIGINS, [_railway_origin])
+        CSRF_TRUSTED_ORIGINS = merge_unique(CSRF_TRUSTED_ORIGINS, [_railway_origin])
 
 # ---------------------------------------------------------------------------
 # Production hardening (only applied when DEBUG is off)
