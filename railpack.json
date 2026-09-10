@@ -1,0 +1,24 @@
+{
+  "$schema": "https://schema.railpack.com",
+  "packages": {
+    "node": "20",
+    "python": "3.12"
+  },
+  "steps": {
+    "build": {
+      "commands": [
+        {
+          "cmd": "bash scripts/railway-build.sh",
+          "customName": "Build frontend and Django static assets"
+        }
+      ]
+    }
+  },
+  "deploy": {
+    "startCommand": "bash scripts/railway-start.sh",
+    "variables": {
+      "PYTHONUNBUFFERED": "1"
+    },
+    "aptPackages": ["libpq5"]
+  }
+}

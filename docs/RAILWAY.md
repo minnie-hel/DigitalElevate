@@ -12,7 +12,14 @@ This project ships as **one web service**: Gunicorn runs Django, serves the REST
 
 1. **New project** → **Deploy from GitHub** (this repository).
 
-2. Railway reads [`railway.toml`](railway.toml) and builds with the root [`Dockerfile`](Dockerfile).
+2. **Choose a builder** (pick one — if the build fails with “Railpack could not determine how to build”, use **Dockerfile**):
+
+   | Builder | What to do |
+   |---------|------------|
+   | **Dockerfile** (recommended) | Service → **Settings** → **Build** → Builder: **Dockerfile**, path `Dockerfile`. Or set variable `RAILWAY_DOCKERFILE_PATH=Dockerfile`. |
+   | **Railpack** | Leave default builder; repo includes [`railpack.json`](railpack.json), [`start.sh`](start.sh), and [`build.sh`](build.sh). |
+
+   Config files: [`railway.json`](railway.json), [`railway.toml`](railway.toml). Link the config file in **Settings → Config file path** if Railway does not pick it up automatically (`/railway.json`).
 
 3. **Add PostgreSQL** → Railway injects `DATABASE_URL` into the web service.
 
@@ -100,6 +107,7 @@ The default Dockerfile serves everything from one domain. If you deploy the API 
 
 ## Troubleshooting
 
+- **Railpack could not determine how to build / start.sh not found** — Switch the service builder to **Dockerfile** (`Dockerfile` at repo root), or redeploy after pulling the latest commit (includes `railpack.json`, `start.sh`, `build.sh`). Remove any stray root `package-lock.json` without a `package.json`.
 - **502 / crash on boot** — check deploy logs; confirm `DATABASE_URL` and `SECRET_KEY` are set.
 - **DisallowedHost** — add your Railway domain to `ALLOWED_HOSTS`.
 - **CSRF / login fails over HTTPS** — set `CSRF_TRUSTED_ORIGINS=https://...` and `DEBUG=False`.
