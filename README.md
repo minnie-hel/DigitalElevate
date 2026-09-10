@@ -207,6 +207,18 @@ admin-only.
 
 ---
 
+## Deploy to Railway
+
+One Docker service serves the React UI and `/api/` (see [`docs/RAILWAY.md`](docs/RAILWAY.md)).
+
+1. Connect this repo to Railway and add a **PostgreSQL** plugin.
+2. Set `SECRET_KEY` only (see [`docs/RAILWAY.md`](docs/RAILWAY.md)). Railway’s generated `*.up.railway.app` domain is picked up automatically.
+3. Deploy using the root [`Dockerfile`](Dockerfile) and [`railway.toml`](railway.toml).
+
+Helper scripts live in [`scripts/`](scripts/) (`railway-build.sh`, `railway-start.sh`, `railway-release.sh`).
+
+---
+
 ## Notes
 
 - `refresh_overdue` is called by the dashboard on load. In production, also run it on a

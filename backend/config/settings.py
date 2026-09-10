@@ -13,6 +13,8 @@ from dotenv import load_dotenv
 import os
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+FRONTEND_DIST = BASE_DIR / "frontend_dist"
+SERVE_SPA = FRONTEND_DIST.is_dir()
 
 load_dotenv(BASE_DIR / ".env")
 
@@ -29,6 +31,19 @@ def env_list(name: str, default: str = "") -> list[str]:
     return [item.strip() for item in raw.split(",") if item.strip()]
 
 
+def merge_unique(*groups: list[str]) -> list[str]:
+    seen: set[str] = set()
+    merged: list[str] = []
+    for group in groups:
+        for item in group:
+            if item and item not in seen:
+                seen.add(item)
+                merged.append(item)
+    return merged
+
+
+RAILWAY_PUBLIC_DOMAIN = os.getenv("RAILWAY_PUBLIC_DOMAIN", "").strip()
+
 # ---------------------------------------------------------------------------
 # Core
 # ---------------------------------------------------------------------------
@@ -38,9 +53,12 @@ SECRET_KEY = os.getenv(
     "django-insecure-dev-key-change-me-in-production",
 )
 
-DEBUG = env_bool("DEBUG", True)
+# On Railway, default to production mode unless DEBUG is set explicitly.
+DEBUG = env_bool("DEBUG", False if RAILWAY_PUBLIC_DOMAIN else True)
 
 ALLOWED_HOSTS = env_list("ALLOWED_HOSTS", "localhost,127.0.0.1,[::1]")
+if RAILWAY_PUBLIC_DOMAIN:
+    ALLOWED_HOSTS = merge_unique(ALLOWED_HOSTS, [RAILWAY_PUBLIC_DOMAIN])
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -70,13 +88,21 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
-    "django.contrib.sessions.middleware.SessionMiddleware",
-    "django.middleware.common.CommonMiddleware",
-    "django.middleware.csrf.CsrfViewMiddleware",
-    "django.contrib.auth.middleware.AuthenticationMiddleware",
-    "django.contrib.messages.middleware.MessageMiddleware",
-    "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
+
+if SERVE_SPA:
+    MIDDLEWARE.append("whitenoise.middleware.WhiteNoiseMiddleware")
+
+MIDDLEWARE.extend(
+    [
+        "django.contrib.sessions.middleware.SessionMiddleware",
+        "django.middleware.common.CommonMiddleware",
+        "django.middleware.csrf.CsrfViewMiddleware",
+        "django.contrib.auth.middleware.AuthenticationMiddleware",
+        "django.contrib.messages.middleware.MessageMiddleware",
+        "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    ]
+)
 
 ROOT_URLCONF = "config.urls"
 
@@ -139,6 +165,11 @@ DEFAULT_CURRENCY = os.getenv("DEFAULT_CURRENCY", "TZS")
 STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
+if SERVE_SPA:
+    WHITENOISE_ROOT = FRONTEND_DIST
+    WHITENOISE_MAX_AGE = 31536000
+    WHITENOISE_SKIP_COMPRESS_EXTENSIONS = ("jpg", "jpeg", "png", "gif", "webp", "ico", "svg")
+
 MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
@@ -180,12 +211,22 @@ CORS_ALLOWED_ORIGINS = env_list(
     "CORS_ALLOWED_ORIGINS",
     "http://localhost:5173,http://127.0.0.1:5173",
 )
+if RAILWAY_PUBLIC_DOMAIN:
+    CORS_ALLOWED_ORIGINS = merge_unique(
+        CORS_ALLOWED_ORIGINS,
+        [f"https://{RAILWAY_PUBLIC_DOMAIN}"],
+    )
 CORS_ALLOW_CREDENTIALS = True
 
 CSRF_TRUSTED_ORIGINS = env_list(
     "CSRF_TRUSTED_ORIGINS",
     "http://localhost:5173,http://127.0.0.1:5173",
 )
+if RAILWAY_PUBLIC_DOMAIN:
+    CSRF_TRUSTED_ORIGINS = merge_unique(
+        CSRF_TRUSTED_ORIGINS,
+        [f"https://{RAILWAY_PUBLIC_DOMAIN}"],
+    )
 
 # ---------------------------------------------------------------------------
 # Production hardening (only applied when DEBUG is off)

@@ -1,4 +1,4 @@
-from django.http import JsonResponse
+from django.http import FileResponse, JsonResponse
 
 
 def api_root(request):
@@ -25,3 +25,13 @@ def api_root(request):
             },
         }
     )
+
+
+def spa_index(request):
+    """React router paths — serve the built SPA entry."""
+    from django.conf import settings
+
+    index_path = settings.FRONTEND_DIST / "index.html"
+    if not index_path.is_file():
+        return api_root(request)
+    return FileResponse(index_path.open("rb"), content_type="text/html; charset=utf-8")

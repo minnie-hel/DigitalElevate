@@ -8,6 +8,8 @@ django-cors-headers==4.4.0
 django-filter==24.3
 dj-database-url==2.2.0
 python-dotenv==1.0.1
+gunicorn==22.0.0
+whitenoise==6.7.0
 
 # Postgres driver. Not needed for local SQLite development, but required
 # as soon as DATABASE_URL points at Postgres.

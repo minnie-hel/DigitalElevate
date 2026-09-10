@@ -9,6 +9,7 @@ venv/
 db.sqlite3
 db.sqlite3-journal
 /backend/staticfiles/
+/backend/frontend_dist/
 /backend/media/
 
 # Environment
