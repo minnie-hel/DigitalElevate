@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.db import connection
 from django.db.models import Count, Q
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
@@ -108,7 +109,15 @@ class SetupView(APIView):
     throttle_classes = [SetupRateThrottle]
 
     def get(self, request):
-        return Response({"needs_setup": not User.objects.exists()})
+        engine = connection.settings_dict.get("ENGINE", "")
+        user_count = User.objects.count()
+        return Response(
+            {
+                "needs_setup": user_count == 0,
+                "user_count": user_count,
+                "database": "postgresql" if "postgresql" in engine else "other",
+            }
+        )
 
     def post(self, request):
         if User.objects.exists():

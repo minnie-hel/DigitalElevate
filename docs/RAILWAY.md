@@ -21,9 +21,17 @@ This project ships as **one web service**: Gunicorn runs Django, serves the REST
 
    Config files: [`railway.json`](railway.json), [`railway.toml`](railway.toml). Link the config file in **Settings → Config file path** if Railway does not pick it up automatically (`/railway.json`).
 
-3. **Add PostgreSQL** → Railway injects `DATABASE_URL` into the web service.
+3. **Add PostgreSQL** → Railway creates a Postgres service.
 
-4. **Generate a public URL** (no custom domain needed):
+4. **Connect Postgres to the web app** (required — otherwise login accounts and data are lost on every deploy):
+
+   - Open your **web** service (not Postgres) → **Variables**.
+   - **Add variable reference** (or “New variable” → reference): choose the **PostgreSQL** service → **`DATABASE_URL`**.
+   - Redeploy the web service. On boot, `migrate` creates/updates all tables in Postgres.
+
+   Check: open `https://YOUR-APP.up.railway.app/api/auth/setup/` — you should see `"database": "postgresql"` and `"user_count": 1` (or more) after accounts exist.
+
+5. **Generate a public URL** (no custom domain needed):
 
    - Open your **web service** → **Settings** → **Networking** → **Generate Domain**.
    - Railway sets `RAILWAY_PUBLIC_DOMAIN` (e.g. `digital-elevate-production.up.railway.app`).
@@ -107,7 +115,9 @@ The default Dockerfile serves everything from one domain. If you deploy the API 
 
 ## Troubleshooting
 
-- **Railpack could not determine how to build / start.sh not found** — Switch the service builder to **Dockerfile** (`Dockerfile` at repo root), or redeploy after pulling the latest commit (includes `railpack.json`, `start.sh`, `build.sh`). Remove any stray root `package-lock.json` without a `package.json`.
+- **Railpack could not determine how to build** — Use builder **Dockerfile** at repo root, or redeploy with latest `railpack.json` / `start.sh`.
+- **“No login account” / Sign-in always 401** — Open `https://YOUR-APP.up.railway.app/api/auth/setup/` in the browser. If `"needs_setup": true`, the database has **no users** (common without PostgreSQL or after a fresh deploy). Use **Create account** on the login page once, or run in Railway shell: `cd backend && python manage.py create_admin --email you@example.com --password 'YourPassword8+'`. Then sign in with that email and password.
+- **Accounts disappear after redeploy** — Add the **PostgreSQL** plugin and confirm `DATABASE_URL` is on the web service. Ephemeral SQLite in the container is wiped on each deploy.
 - **502 / crash on boot** — check deploy logs; confirm `DATABASE_URL` and `SECRET_KEY` are set.
 - **DisallowedHost** — add your Railway domain to `ALLOWED_HOSTS`.
 - **CSRF / login fails over HTTPS** — set `CSRF_TRUSTED_ORIGINS=https://...` and `DEBUG=False`.

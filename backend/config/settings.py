@@ -5,6 +5,7 @@ Local development runs on SQLite by default. Production simply sets
 DATABASE_URL to a Postgres URL - no code change required.
 """
 
+from django.core.exceptions import ImproperlyConfigured
 from datetime import timedelta
 from pathlib import Path
 from urllib.parse import urlparse
@@ -153,12 +154,21 @@ WSGI_APPLICATION = "config.wsgi.application"
 ASGI_APPLICATION = "config.asgi.application"
 
 # ---------------------------------------------------------------------------
-# Database
+# Database — local SQLite; production uses PostgreSQL via DATABASE_URL (Railway).
 # ---------------------------------------------------------------------------
+
+_SQLITE_DEFAULT = f"sqlite:///{BASE_DIR / 'db.sqlite3'}"
+_DATABASE_URL = os.getenv("DATABASE_URL", "").strip()
+
+if ON_RAILWAY and (not _DATABASE_URL or _DATABASE_URL.startswith("sqlite")):
+    raise ImproperlyConfigured(
+        "Railway deploy requires PostgreSQL. In the web service, add a variable reference "
+        "to the Postgres plugin DATABASE_URL (not an empty or SQLite URL), then redeploy."
+    )
 
 DATABASES = {
     "default": dj_database_url.config(
-        default=os.getenv("DATABASE_URL", f"sqlite:///{BASE_DIR / 'db.sqlite3'}"),
+        default=_DATABASE_URL or _SQLITE_DEFAULT,
         conn_max_age=600,
         conn_health_checks=True,
     )

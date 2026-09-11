@@ -14,7 +14,7 @@ export default function Login() {
   const { isDark, toggleMode } = useTheme()
   const [setupChecked, setSetupChecked] = useState(false)
   const [needsSetup, setNeedsSetup] = useState(false)
-  /** 'signin' | 'setup' — user can switch when first-time setup is offered. */
+  const [userCount, setUserCount] = useState(0)
   const [authMode, setAuthMode] = useState('signin')
   const [error, setError] = useState('')
 
@@ -39,19 +39,16 @@ export default function Login() {
         const { data } = await api.get('/auth/setup/')
         if (cancelled) return
 
+        const count = Number(data?.user_count) || 0
         const serverNeedsSetup = data?.needs_setup === true
+        setUserCount(count)
         setNeedsSetup(serverNeedsSetup)
-        setAuthMode(serverNeedsSetup ? 'setup' : 'signin')
+        setAuthMode('signin')
         if (!serverNeedsSetup) {
           localStorage.setItem(HAS_USERS_KEY, '1')
-        } else {
-          localStorage.removeItem(HAS_USERS_KEY)
         }
       } catch {
-        if (!cancelled) {
-          // If the API is unreachable, keep the sign-in form — do not assume first-time setup.
-          setNeedsSetup(false)
-        }
+        if (!cancelled) setNeedsSetup(false)
       } finally {
         if (!cancelled) setSetupChecked(true)
       }
@@ -68,24 +65,20 @@ export default function Login() {
     const result = await login(values.email.trim(), values.password)
     if (result.ok) return
 
-    let message = result.error
-    try {
-      const { data } = await api.get('/auth/setup/')
-      if (data?.needs_setup === true) {
-        setNeedsSetup(true)
-        message =
-          'No login account exists on this server yet (often after a redeploy without PostgreSQL). Create an administrator below, or reset a password with Railway: python manage.py create_admin --email you@example.com --password YourPassword'
-      }
-    } catch {
-      // Keep the sign-in error from the API.
+    if (userCount === 0 && needsSetup) {
+      setError(
+        `${result.error} No users are in the database yet — use Create administrator once, or ask your admin to add your account.`,
+      )
+      return
     }
-    setError(message)
+
+    setError(result.error)
   }
 
   async function onSetup(values) {
     setError('')
     try {
-      await api.post('/auth/setup/', {
+      const { data: created } = await api.post('/auth/setup/', {
         email: values.email.trim(),
         password: values.password,
         first_name: values.first_name.trim(),
@@ -93,9 +86,11 @@ export default function Login() {
       })
       localStorage.setItem(HAS_USERS_KEY, '1')
       setNeedsSetup(false)
-      const result = await login(values.email.trim(), values.password)
+      setUserCount(1)
+      setAuthMode('signin')
+      const result = await login(created.email, values.password)
       if (!result.ok) {
-        setError('Account created. Sign in with the password you chose.')
+        setError(result.error || 'Account created. Sign in with the same email and password.')
       }
     } catch (requestError) {
       setError(apiErrorMessage(requestError, 'Could not create the administrator account.'))
@@ -104,11 +99,6 @@ export default function Login() {
 
   const busy = signInForm.formState.isSubmitting || setupForm.formState.isSubmitting
   const showSetupForm = setupChecked && authMode === 'setup' && needsSetup
-
-  function switchMode(mode) {
-    setAuthMode(mode)
-    setError('')
-  }
 
   return (
     <div className="relative flex min-h-screen items-center justify-center bg-slate-900 px-4 py-12 dark:bg-slate-950">
@@ -126,53 +116,13 @@ export default function Login() {
           <Logo className="mx-auto w-60 max-w-full" />
 
           <div className="mt-5 border-t border-slate-100 pt-5 dark:border-slate-800">
-            {setupChecked && needsSetup ? (
-              <div
-                className="mb-4 flex rounded-lg border border-slate-200 bg-slate-50 p-1
-                  dark:border-slate-700 dark:bg-slate-800/80"
-                role="tablist"
-                aria-label="Sign in or create account"
-              >
-                <button
-                  type="button"
-                  role="tab"
-                  aria-selected={authMode === 'signin'}
-                  className={`flex-1 rounded-md px-3 py-2 text-sm font-medium transition ${
-                    authMode === 'signin'
-                      ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-900 dark:text-slate-100'
-                      : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200'
-                  }`}
-                  onClick={() => switchMode('signin')}
-                >
-                  Sign in
-                </button>
-                <button
-                  type="button"
-                  role="tab"
-                  aria-selected={authMode === 'setup'}
-                  className={`flex-1 rounded-md px-3 py-2 text-sm font-medium transition ${
-                    authMode === 'setup'
-                      ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-900 dark:text-slate-100'
-                      : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200'
-                  }`}
-                  onClick={() => switchMode('setup')}
-                >
-                  Create account
-                </button>
-              </div>
-            ) : null}
-
             <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
               {showSetupForm ? 'Create administrator' : 'Sign in'}
             </h2>
             <p className="mt-1 text-muted-xs">
               {showSetupForm
-                ? 'First login only — creates the admin who can add other staff later.'
-                : 'Use your Elevate Digital work email and password.'}
-            </p>
-            <p className="mt-2 text-muted-xs">
-              Signing in only opens your session on this device. Clients, projects, invoices, and
-              other company data stay in the database and are shared with every authorised login.
+                ? 'Only when the database has no login accounts yet.'
+                : 'Enter the email and password stored in the system. All authorised users see the same company data (clients, projects, invoices).'}
             </p>
           </div>
 
@@ -252,7 +202,10 @@ export default function Login() {
                 <button
                   type="button"
                   className="font-medium text-brand-600 hover:text-brand-700 dark:text-brand-400"
-                  onClick={() => switchMode('signin')}
+                  onClick={() => {
+                    setAuthMode('signin')
+                    setError('')
+                  }}
                 >
                   Sign in
                 </button>
@@ -309,13 +262,16 @@ export default function Login() {
 
               {needsSetup ? (
                 <p className="text-center text-sm text-slate-600 dark:text-slate-400">
-                  First time on this server?{' '}
+                  Database has no users yet.{' '}
                   <button
                     type="button"
                     className="font-medium text-brand-600 hover:text-brand-700 dark:text-brand-400"
-                    onClick={() => switchMode('setup')}
+                    onClick={() => {
+                      setAuthMode('setup')
+                      setError('')
+                    }}
                   >
-                    Create administrator
+                    Create administrator (one time)
                   </button>
                 </p>
               ) : null}

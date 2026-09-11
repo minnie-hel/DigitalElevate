@@ -45,7 +45,7 @@ export function AuthProvider({ children }) {
     try {
       tokenStore.clear()
       const { data } = await api.post('/auth/login/', {
-        email: email.trim(),
+        email: email.trim().toLowerCase(),
         password,
       })
       tokenStore.save({ access: data.access, refresh: data.refresh })
