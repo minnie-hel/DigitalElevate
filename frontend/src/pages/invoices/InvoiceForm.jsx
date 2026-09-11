@@ -299,7 +299,7 @@ export default function InvoiceForm({ open, invoice, onClose, onSaved }) {
               <option value="sent">Sent</option>
               <option value="cancelled">Cancelled</option>
             </select>
-            <p className="mt-1 text-xs text-slate-400">
+            <p className="mt-1 text-muted-xs">
               Paid and overdue are set automatically from payments and dates.
             </p>
           </div>
@@ -307,7 +307,7 @@ export default function InvoiceForm({ open, invoice, onClose, onSaved }) {
 
         <div>
           <div className="mb-2 flex items-center justify-between">
-            <h3 className="text-sm font-semibold text-slate-900">Line items</h3>
+            <h3 className="section-title">Line items</h3>
             <button
               type="button"
               className="btn-secondary px-2 py-1 text-xs"
@@ -350,12 +350,12 @@ export default function InvoiceForm({ open, invoice, onClose, onSaved }) {
                     aria-label="Unit price"
                     {...register(`items.${index}.unit_price`, { valueAsNumber: true })}
                   />
-                  <span className="w-32 shrink-0 py-2 text-right text-sm tabular-nums text-slate-600">
+                  <span className="w-32 shrink-0 py-2 text-right text-sm tabular-nums text-slate-600 dark:text-slate-400">
                     {formatMoney(quantity * price, { withCurrency: false })}
                   </span>
                   <button
                     type="button"
-                    className="mt-1 rounded-lg p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-600
+                    className="mt-1 rounded-lg p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/40 dark:hover:text-red-400
                       disabled:cursor-not-allowed disabled:opacity-40"
                     onClick={() => remove(index)}
                     disabled={fields.length === 1}
@@ -370,16 +370,16 @@ export default function InvoiceForm({ open, invoice, onClose, onSaved }) {
 
           <dl className="mt-4 ml-auto max-w-xs space-y-1 text-sm">
             <div className="flex justify-between">
-              <dt className="text-slate-500">Subtotal</dt>
-              <dd className="tabular-nums text-slate-700">{formatMoney(totals.subtotal)}</dd>
+              <dt className="text-muted">Subtotal</dt>
+              <dd className="tabular-nums text-slate-700 dark:text-slate-300">{formatMoney(totals.subtotal)}</dd>
             </div>
             <div className="flex justify-between">
-              <dt className="text-slate-500">Tax ({Number(taxRate) || 0}%)</dt>
-              <dd className="tabular-nums text-slate-700">{formatMoney(totals.tax)}</dd>
+              <dt className="text-muted">Tax ({Number(taxRate) || 0}%)</dt>
+              <dd className="tabular-nums text-slate-700 dark:text-slate-300">{formatMoney(totals.tax)}</dd>
             </div>
-            <div className="flex justify-between border-t border-slate-200 pt-1 font-semibold">
-              <dt className="text-slate-700">Total</dt>
-              <dd className="tabular-nums text-slate-900">{formatMoney(totals.total)}</dd>
+            <div className="flex justify-between border-t border-slate-200 dark:border-slate-700 pt-1 font-semibold">
+              <dt className="text-slate-700 dark:text-slate-300">Total</dt>
+              <dd className="tabular-nums text-slate-900 dark:text-slate-100">{formatMoney(totals.total)}</dd>
             </div>
           </dl>
         </div>

@@ -1,7 +1,7 @@
 import Modal from './Modal.jsx'
 import { AlertIcon } from './Icons.jsx'
 
-export default function ConfirmDialog({
+function ConfirmDialog({
   open,
   title = 'Are you sure?',
   message,
@@ -28,11 +28,13 @@ export default function ConfirmDialog({
       }
     >
       <div className="flex gap-3">
-        <span className="mt-0.5 text-red-500">
+        <span className="mt-0.5 text-red-500 dark:text-red-400">
           <AlertIcon />
         </span>
-        <p className="text-sm text-slate-600">{message}</p>
+        <p className="text-sm text-slate-600 dark:text-slate-300">{message}</p>
       </div>
     </Modal>
   )
 }
+
+export default ConfirmDialog

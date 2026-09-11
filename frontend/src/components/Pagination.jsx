@@ -8,11 +8,14 @@ export default function Pagination({ page, count, pageSize = 20, onChange }) {
   const last = Math.min(page * pageSize, count)
 
   return (
-    <div className="no-print flex items-center justify-between border-t border-slate-200 px-4 py-3">
-      <p className="text-sm text-slate-500">
-        Showing <span className="font-medium text-slate-700">{first}</span>-
-        <span className="font-medium text-slate-700">{last}</span> of{' '}
-        <span className="font-medium text-slate-700">{count}</span>
+    <div
+      className="no-print flex items-center justify-between border-t border-slate-200 px-4 py-3
+        dark:border-slate-800"
+    >
+      <p className="text-sm text-muted">
+        Showing <span className="font-medium text-slate-700 dark:text-slate-200">{first}</span>-
+        <span className="font-medium text-slate-700 dark:text-slate-200">{last}</span> of{' '}
+        <span className="font-medium text-slate-700 dark:text-slate-200">{count}</span>
       </p>
       <div className="flex items-center gap-2">
         <button
@@ -24,7 +27,7 @@ export default function Pagination({ page, count, pageSize = 20, onChange }) {
         >
           <ChevronLeftIcon className="h-4 w-4" />
         </button>
-        <span className="text-sm text-slate-600">
+        <span className="text-sm text-slate-600 dark:text-slate-400">
           Page {page} of {totalPages}
         </span>
         <button

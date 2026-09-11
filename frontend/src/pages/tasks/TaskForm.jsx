@@ -262,7 +262,7 @@ export default function TaskForm({ open, task, defaultProject, onClose, onSaved 
               })}
             />
             {errors.completion && <p className="field-error">{errors.completion.message}</p>}
-            <p className="mt-1 text-xs text-slate-400">
+            <p className="mt-1 text-muted-xs">
               Set automatically to 100% when the status is Completed.
             </p>
           </div>

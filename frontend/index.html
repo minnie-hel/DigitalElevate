@@ -4,9 +4,23 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/png" href="/logo.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="light" />
     <title>Elevate Digital - Client Management</title>
+    <script>
+      ;(() => {
+        try {
+          const key = 'elevate.theme'
+          const stored = localStorage.getItem(key)
+          const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+          const dark =
+            stored === 'dark' || ((stored === 'system' || !stored) && systemDark)
+          if (dark) document.documentElement.classList.add('dark')
+          document.documentElement.style.colorScheme = dark ? 'dark' : 'light'
+        } catch (_) {}
+      })()
+    </script>
   </head>
-  <body>
+  <body class="bg-slate-100 text-slate-800 dark:bg-slate-950 dark:text-slate-100">
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>

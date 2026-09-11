@@ -167,27 +167,27 @@ export default function InvoiceDetails() {
       <section className="card mt-6 p-5">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <h2 className="text-sm font-semibold text-slate-900">Bill to</h2>
-            <p className="mt-1 text-sm text-slate-700">{invoice.client_name}</p>
+            <h2 className="section-title">Bill to</h2>
+            <p className="mt-1 text-sm text-slate-700 dark:text-slate-300">{invoice.client_name}</p>
             {invoice.project_name && (
-              <p className="text-sm text-slate-500">Project: {invoice.project_name}</p>
+              <p className="text-sm text-muted">Project: {invoice.project_name}</p>
             )}
           </div>
           <dl className="text-sm">
             <div className="flex gap-4">
-              <dt className="text-slate-500">Issued</dt>
-              <dd className="text-slate-700">{formatDate(invoice.issue_date)}</dd>
+              <dt className="text-muted">Issued</dt>
+              <dd className="text-slate-700 dark:text-slate-300">{formatDate(invoice.issue_date)}</dd>
             </div>
             <div className="flex gap-4">
-              <dt className="text-slate-500">Due</dt>
-              <dd className="text-slate-700">{formatDate(invoice.due_date)}</dd>
+              <dt className="text-muted">Due</dt>
+              <dd className="text-slate-700 dark:text-slate-300">{formatDate(invoice.due_date)}</dd>
             </div>
           </dl>
         </div>
 
         <div className="table-wrap mt-5">
           <table className="min-w-full divide-y divide-slate-200">
-            <thead className="bg-slate-50">
+            <thead className="surface-subtle">
               <tr>
                 <th className="th">Description</th>
                 <th className="th text-right">Qty</th>
@@ -214,27 +214,27 @@ export default function InvoiceDetails() {
 
         <dl className="mt-4 ml-auto max-w-xs space-y-1 text-sm">
           <div className="flex justify-between">
-            <dt className="text-slate-500">Subtotal</dt>
-            <dd className="tabular-nums text-slate-700">
+            <dt className="text-muted">Subtotal</dt>
+            <dd className="tabular-nums text-slate-700 dark:text-slate-300">
               {formatMoney(invoice.subtotal_amount)}
             </dd>
           </div>
           <div className="flex justify-between">
-            <dt className="text-slate-500">Tax ({Number(invoice.tax_rate)}%)</dt>
-            <dd className="tabular-nums text-slate-700">{formatMoney(invoice.tax_amount)}</dd>
+            <dt className="text-muted">Tax ({Number(invoice.tax_rate)}%)</dt>
+            <dd className="tabular-nums text-slate-700 dark:text-slate-300">{formatMoney(invoice.tax_amount)}</dd>
           </div>
-          <div className="flex justify-between border-t border-slate-200 pt-1 font-semibold">
-            <dt className="text-slate-700">Total</dt>
-            <dd className="tabular-nums text-slate-900">{formatMoney(invoice.total_amount)}</dd>
+          <div className="flex justify-between border-t border-slate-200 dark:border-slate-700 pt-1 font-semibold">
+            <dt className="text-slate-700 dark:text-slate-300">Total</dt>
+            <dd className="tabular-nums text-slate-900 dark:text-slate-100">{formatMoney(invoice.total_amount)}</dd>
           </div>
           <div className="flex justify-between">
-            <dt className="text-slate-500">Paid</dt>
+            <dt className="text-muted">Paid</dt>
             <dd className="tabular-nums text-emerald-600">
               -{formatMoney(invoice.amount_paid, { withCurrency: false })}
             </dd>
           </div>
-          <div className="flex justify-between border-t border-slate-200 pt-1 font-semibold">
-            <dt className="text-slate-700">Balance due</dt>
+          <div className="flex justify-between border-t border-slate-200 dark:border-slate-700 pt-1 font-semibold">
+            <dt className="text-slate-700 dark:text-slate-300">Balance due</dt>
             <dd className={`tabular-nums ${settled ? 'text-emerald-600' : 'text-red-600'}`}>
               {formatMoney(invoice.balance)}
             </dd>
@@ -242,15 +242,15 @@ export default function InvoiceDetails() {
         </dl>
 
         {invoice.notes && (
-          <p className="mt-5 border-t border-slate-200 pt-4 text-sm text-slate-500">
+          <p className="mt-5 border-t border-slate-200 pt-4 text-sm text-muted dark:border-slate-700">
             {invoice.notes}
           </p>
         )}
       </section>
 
       <section className="card mt-6">
-        <div className="flex items-center justify-between border-b border-slate-200 p-4">
-          <h2 className="text-sm font-semibold text-slate-900">Payments</h2>
+        <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-700 p-4">
+          <h2 className="section-title">Payments</h2>
           {canReceivePayment && (
             <button
               type="button"
@@ -294,7 +294,7 @@ export default function InvoiceDetails() {
                   <div className="flex justify-end gap-1">
                     <button
                       type="button"
-                      className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-brand-600"
+                      className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-brand-600 dark:hover:bg-slate-800 dark:hover:text-brand-400"
                       onClick={() => {
                         setEditingPayment(row)
                         setPaymentFormOpen(true)
@@ -305,7 +305,7 @@ export default function InvoiceDetails() {
                     </button>
                     <button
                       type="button"
-                      className="rounded-lg p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-600"
+                      className="rounded-lg p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/40 dark:hover:text-red-400"
                       onClick={() => setDeletingPayment(row)}
                       aria-label="Delete payment"
                     >

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 import Alert from '../../components/Alert.jsx'
 import ConfirmDialog from '../../components/ConfirmDialog.jsx'
@@ -7,7 +8,7 @@ import ListScreenToolbar from '../../components/ListScreenToolbar.jsx'
 import PageHeader from '../../components/PageHeader.jsx'
 import PrintHeader from '../../components/PrintHeader.jsx'
 import StatusBadge from '../../components/StatusBadge.jsx'
-import { EditIcon, TrashIcon } from '../../components/Icons.jsx'
+import { EditIcon, TrashIcon, ViewIcon } from '../../components/Icons.jsx'
 import TeamForm from './TeamForm.jsx'
 import api, { apiErrorMessage } from '../../services/api.js'
 import useList from '../../hooks/useList.js'
@@ -23,6 +24,7 @@ const STATUS_TABS = [
 ]
 
 export default function TeamList() {
+  const navigate = useNavigate()
   const { canEdit } = useAuth()
   const [status, setStatus] = useState('')
   const [formOpen, setFormOpen] = useState(false)
@@ -60,8 +62,8 @@ export default function TeamList() {
             {initials(row.name)}
           </span>
           <div>
-            <p className="font-medium text-slate-800">{row.name}</p>
-            <p className="text-xs text-slate-500">{row.role || 'No title set'}</p>
+            <p className="text-emphasis">{row.name}</p>
+            <p className="text-muted-xs">{row.role || 'No title set'}</p>
           </div>
         </div>
       ),
@@ -77,30 +79,8 @@ export default function TeamList() {
       render: (row) => (
         <div>
           <p>{row.email || '-'}</p>
-          {row.phone && <p className="text-xs text-slate-500">{row.phone}</p>}
+          {row.phone && <p className="text-muted-xs">{row.phone}</p>}
         </div>
-      ),
-    },
-    {
-      key: 'skills',
-      header: 'Skills',
-      render: (row) =>
-        row.skill_list?.length ? (
-          <span className="text-xs text-slate-600">{row.skill_list.join(', ')}</span>
-        ) : (
-          <span className="text-slate-400">-</span>
-        ),
-    },
-    {
-      key: 'workload',
-      header: 'Workload',
-      align: 'right',
-      render: (row) => (
-        <span className="whitespace-nowrap text-xs">
-          <span className="font-semibold text-slate-700">{row.open_task_count}</span> open
-          <span className="text-slate-400"> · </span>
-          <span className="font-semibold text-slate-700">{row.completed_task_count}</span> done
-        </span>
       ),
     },
     {
@@ -118,30 +98,48 @@ export default function TeamList() {
       header: '',
       align: 'right',
       hideOnPrint: true,
-      render: (row) =>
-        canEdit ? (
-          <div className="flex justify-end gap-1">
-            <button
-              type="button"
-              className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-brand-600"
-              onClick={() => {
-                setEditing(row)
-                setFormOpen(true)
-              }}
-              aria-label={`Edit ${row.name}`}
-            >
-              <EditIcon className="h-4 w-4" />
-            </button>
-            <button
-              type="button"
-              className="rounded-lg p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-600"
-              onClick={() => setDeleting(row)}
-              aria-label={`Remove ${row.name}`}
-            >
-              <TrashIcon className="h-4 w-4" />
-            </button>
-          </div>
-        ) : null,
+      render: (row) => (
+        <div className="flex justify-end gap-1">
+          <button
+            type="button"
+            className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-brand-600 dark:hover:bg-slate-800 dark:hover:text-brand-400"
+            onClick={(event) => {
+              event.stopPropagation()
+              navigate(`/team/${row.id}`)
+            }}
+            aria-label={`View ${row.name}`}
+          >
+            <ViewIcon className="h-4 w-4" />
+          </button>
+          {canEdit ? (
+            <>
+              <button
+                type="button"
+                className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-brand-600 dark:hover:bg-slate-800 dark:hover:text-brand-400"
+                onClick={(event) => {
+                  event.stopPropagation()
+                  setEditing(row)
+                  setFormOpen(true)
+                }}
+                aria-label={`Edit ${row.name}`}
+              >
+                <EditIcon className="h-4 w-4" />
+              </button>
+              <button
+                type="button"
+                className="rounded-lg p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/40 dark:hover:text-red-400"
+                onClick={(event) => {
+                  event.stopPropagation()
+                  setDeleting(row)
+                }}
+                aria-label={`Remove ${row.name}`}
+              >
+                <TrashIcon className="h-4 w-4" />
+              </button>
+            </>
+          ) : null}
+        </div>
+      ),
     },
   ]
 
@@ -211,6 +209,7 @@ export default function TeamList() {
           rows={list.rows}
           loading={list.loading}
           emptyMessage="No team members match your search."
+          onRowClick={(row) => navigate(`/team/${row.id}`)}
         />
       </div>
 

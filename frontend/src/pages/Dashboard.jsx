@@ -18,9 +18,11 @@ import Spinner from '../components/Spinner.jsx'
 import StatCard from '../components/StatCard.jsx'
 import StatusBadge from '../components/StatusBadge.jsx'
 import api, { apiErrorMessage } from '../services/api.js'
+import { useTheme } from '../context/ThemeContext.jsx'
 import { formatDate, formatMoney, formatMoneyShort, timeAgo } from '../utils/format.js'
 
 export default function Dashboard() {
+  const { isDark } = useTheme()
   const [stats, setStats] = useState(null)
   const [revenue, setRevenue] = useState([])
   const [loading, setLoading] = useState(true)
@@ -72,6 +74,16 @@ export default function Dashboard() {
     Invoiced: Number(row.invoiced),
     Received: Number(row.paid),
   }))
+
+  const gridStroke = isDark ? '#334155' : '#e2e8f0'
+  const tickFill = isDark ? '#94a3b8' : '#64748b'
+  const tooltipStyle = {
+    fontSize: 12,
+    borderRadius: 8,
+    borderColor: isDark ? '#475569' : '#e2e8f0',
+    backgroundColor: isDark ? '#0f172a' : '#fff',
+    color: isDark ? '#e2e8f0' : '#334155',
+  }
 
   return (
     <div>
@@ -125,32 +137,29 @@ export default function Dashboard() {
       <div className="mt-4 grid gap-4 lg:grid-cols-3">
         <section className="card p-4 lg:col-span-2">
           <div className="flex items-baseline justify-between">
-            <h2 className="text-sm font-semibold text-slate-900">Invoiced vs received</h2>
-            <p className="text-xs text-slate-500">Last 12 months, TZS</p>
+            <h2 className="section-title">Invoiced vs received</h2>
+            <p className="text-muted-xs">Last 12 months, TZS</p>
           </div>
           <div className="mt-2 h-56">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={chartData} margin={{ top: 8, right: 8, left: 8, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke={gridStroke} vertical={false} />
                 <XAxis
                   dataKey="month"
-                  tick={{ fontSize: 11, fill: '#64748b' }}
+                  tick={{ fontSize: 11, fill: tickFill }}
                   tickLine={false}
-                  axisLine={{ stroke: '#e2e8f0' }}
+                  axisLine={{ stroke: gridStroke }}
                   interval="preserveStartEnd"
                 />
                 <YAxis
                   tickFormatter={formatMoneyShort}
-                  tick={{ fontSize: 11, fill: '#64748b' }}
+                  tick={{ fontSize: 11, fill: tickFill }}
                   tickLine={false}
                   axisLine={false}
                   width={52}
                 />
-                <Tooltip
-                  formatter={(value) => formatMoney(value)}
-                  contentStyle={{ fontSize: 12, borderRadius: 8, borderColor: '#e2e8f0' }}
-                />
-                <Legend wrapperStyle={{ fontSize: 12 }} />
+                <Tooltip formatter={(value) => formatMoney(value)} contentStyle={tooltipStyle} />
+                <Legend wrapperStyle={{ fontSize: 12, color: tickFill }} />
                 <Bar dataKey="Invoiced" fill="#94a3b8" radius={[4, 4, 0, 0]} />
                 <Bar dataKey="Received" fill="#3366ff" radius={[4, 4, 0, 0]} />
               </BarChart>
@@ -161,20 +170,24 @@ export default function Dashboard() {
         {/* Both side panels scroll inside a fixed height rather than pushing
             the page down. */}
         <section className="card flex flex-col p-4">
-          <h2 className="text-sm font-semibold text-slate-900">Recent activity</h2>
+          <h2 className="section-title">Recent activity</h2>
           {stats.recent_activity.length === 0 ? (
-            <p className="mt-4 text-sm text-slate-500">No activity recorded yet.</p>
+            <p className="mt-4 text-body text-muted">No activity recorded yet.</p>
           ) : (
-            <ul className="scroll-panel mt-2 max-h-56 divide-y divide-slate-100 pr-1">
+            <ul className="scroll-panel mt-2 max-h-56 divide-y divide-slate-100 pr-1 dark:divide-slate-800">
               {stats.recent_activity.map((entry) => (
                 <li key={entry.id} className="flex gap-2 py-2">
                   <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-500" />
                   <div className="min-w-0">
-                    <p className="text-xs leading-snug text-slate-700">
-                      <span className="font-medium">{entry.actor_name || 'System'}</span>{' '}
+                    <p className="text-xs leading-snug text-slate-700 dark:text-slate-300">
+                      <span className="text-emphasis dark:text-slate-100">
+                        {entry.actor_name || 'System'}
+                      </span>{' '}
                       {entry.description}
                     </p>
-                    <p className="text-[11px] text-slate-400">{timeAgo(entry.created_at)}</p>
+                    <p className="text-[11px] text-slate-400 dark:text-slate-500">
+                      {timeAgo(entry.created_at)}
+                    </p>
                   </div>
                 </li>
               ))}
@@ -185,16 +198,20 @@ export default function Dashboard() {
 
       <section className="card mt-4 p-4">
         <div className="flex items-baseline justify-between">
-          <h2 className="text-sm font-semibold text-slate-900">Project progress</h2>
-          <Link to="/projects" className="text-xs font-medium text-brand-600 hover:text-brand-700">
+          <h2 className="section-title">Project progress</h2>
+          <Link
+            to="/projects"
+            className="text-xs font-medium text-brand-600 hover:text-brand-700 dark:text-brand-400
+              dark:hover:text-brand-300"
+          >
             View all projects
           </Link>
         </div>
 
         {stats.project_progress.length === 0 ? (
-          <p className="mt-4 text-sm text-slate-500">No active projects at the moment.</p>
+          <p className="mt-4 text-body text-muted">No active projects at the moment.</p>
         ) : (
-          <ul className="scroll-panel mt-1 max-h-64 divide-y divide-slate-100 pr-1">
+          <ul className="scroll-panel mt-1 max-h-64 divide-y divide-slate-100 pr-1 dark:divide-slate-800">
             {stats.project_progress.map((project) => (
               <li
                 key={project.id}
@@ -203,21 +220,21 @@ export default function Dashboard() {
                 <div className="min-w-0 flex-1">
                   <Link
                     to={`/projects/${project.id}`}
-                    className="text-sm font-medium text-slate-800 hover:text-brand-600"
+                    className="text-sm text-emphasis hover:text-brand-600 dark:hover:text-brand-400"
                   >
                     {project.name}
                   </Link>
-                  <span className="ml-2 text-xs text-slate-500">{project.client_name}</span>
+                  <span className="ml-2 text-muted-xs">{project.client_name}</span>
                 </div>
                 <ProgressBar
                   value={project.progress}
                   showLabel={false}
                   className="w-40 shrink-0"
                 />
-                <span className="w-10 shrink-0 text-right text-xs tabular-nums text-slate-500">
+                <span className="w-10 shrink-0 text-right text-xs tabular-nums text-muted">
                   {project.progress}%
                 </span>
-                <span className="w-24 shrink-0 text-right text-xs text-slate-400">
+                <span className="w-24 shrink-0 text-right text-muted-xs">
                   {formatDate(project.due_date)}
                 </span>
                 <StatusBadge value={project.status} />

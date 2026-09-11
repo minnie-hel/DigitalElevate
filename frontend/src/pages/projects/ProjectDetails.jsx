@@ -153,7 +153,7 @@ export default function ProjectDetails() {
       </div>
 
       <section className="card mt-6 p-5">
-        <h2 className="text-sm font-semibold text-slate-900">Overall progress</h2>
+        <h2 className="section-title">Overall progress</h2>
         <ProgressBar value={project.progress} className="mt-3" />
         {progress && (
           <dl className="mt-4 grid grid-cols-2 gap-3 text-sm sm:grid-cols-5">
@@ -164,9 +164,9 @@ export default function ProjectDetails() {
               ['Blocked', progress.blocked],
               ['To do', progress.pending],
             ].map(([label, value]) => (
-              <div key={label} className="rounded-lg bg-slate-50 p-3">
-                <dt className="text-xs text-slate-500">{label}</dt>
-                <dd className="mt-0.5 text-lg font-semibold text-slate-800">{value}</dd>
+              <div key={label} className="rounded-lg surface-subtle p-3">
+                <dt className="text-muted-xs">{label}</dt>
+                <dd className="mt-0.5 text-lg font-semibold text-slate-800 dark:text-slate-100">{value}</dd>
               </div>
             ))}
           </dl>
@@ -177,8 +177,8 @@ export default function ProjectDetails() {
       </section>
 
       <section className="card mt-6">
-        <div className="flex items-center justify-between border-b border-slate-200 p-4">
-          <h2 className="text-sm font-semibold text-slate-900">Tasks</h2>
+        <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-700 p-4">
+          <h2 className="section-title">Tasks</h2>
           <button
             type="button"
             className="btn-primary"
@@ -217,7 +217,7 @@ export default function ProjectDetails() {
                   className={
                     row.status === 'completed'
                       ? 'text-slate-400 line-through'
-                      : 'font-medium text-slate-800'
+                      : 'text-emphasis'
                   }
                 >
                   {row.title}
@@ -258,7 +258,7 @@ export default function ProjectDetails() {
                 <div className="flex justify-end gap-1">
                   <button
                     type="button"
-                    className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-brand-600"
+                    className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-brand-600 dark:hover:bg-slate-800 dark:hover:text-brand-400"
                     onClick={() => {
                       setEditingTask(row)
                       setTaskFormOpen(true)
@@ -269,7 +269,7 @@ export default function ProjectDetails() {
                   </button>
                   <button
                     type="button"
-                    className="rounded-lg p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-600"
+                    className="rounded-lg p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/40 dark:hover:text-red-400"
                     onClick={() => setDeletingTask(row)}
                     aria-label={`Delete ${row.title}`}
                   >

@@ -1,9 +1,11 @@
 import { AlertIcon, CheckIcon } from './Icons.jsx'
 
 const TONES = {
-  error: 'border-red-200 bg-red-50 text-red-700',
-  success: 'border-emerald-200 bg-emerald-50 text-emerald-700',
-  info: 'border-blue-200 bg-blue-50 text-blue-700',
+  error:
+    'border-red-200 bg-red-50 text-red-700 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-300',
+  success:
+    'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900/50 dark:bg-emerald-950/40 dark:text-emerald-300',
+  info: 'border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-900/50 dark:bg-blue-950/40 dark:text-blue-300',
 }
 
 export default function Alert({ tone = 'error', children, className = '' }) {

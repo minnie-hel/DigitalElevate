@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 
 import Alert from '../../components/Alert.jsx'
 import ConfirmDialog from '../../components/ConfirmDialog.jsx'
@@ -7,7 +7,7 @@ import DataTable from '../../components/DataTable.jsx'
 import ListScreenToolbar from '../../components/ListScreenToolbar.jsx'
 import PageHeader from '../../components/PageHeader.jsx'
 import PrintHeader from '../../components/PrintHeader.jsx'
-import { EditIcon, TrashIcon } from '../../components/Icons.jsx'
+import { EditIcon, TrashIcon, ViewIcon } from '../../components/Icons.jsx'
 import PaymentForm from './PaymentForm.jsx'
 import api, { apiErrorMessage } from '../../services/api.js'
 import useList from '../../hooks/useList.js'
@@ -28,6 +28,7 @@ const METHOD_TABS = [
 ]
 
 export default function PaymentList() {
+  const navigate = useNavigate()
   const { canEdit } = useAuth()
   const [method, setMethod] = useState('')
   const [client, setClient] = useState('')
@@ -70,6 +71,7 @@ export default function PaymentList() {
         <Link
           to={`/invoices/${row.invoice}`}
           className="font-medium text-brand-600 hover:text-brand-700"
+          onClick={(event) => event.stopPropagation()}
         >
           {row.invoice_number}
         </Link>
@@ -79,7 +81,11 @@ export default function PaymentList() {
       key: 'client_name',
       header: 'Client',
       render: (row) => (
-        <Link to={`/clients/${row.client_id}`} className="hover:text-brand-600">
+        <Link
+          to={`/clients/${row.client_id}`}
+          className="hover:text-brand-600"
+          onClick={(event) => event.stopPropagation()}
+        >
           {row.client_name}
         </Link>
       ),
@@ -99,30 +105,48 @@ export default function PaymentList() {
       header: '',
       align: 'right',
       hideOnPrint: true,
-      render: (row) =>
-        canEdit ? (
-          <div className="flex justify-end gap-1">
-            <button
-              type="button"
-              className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-brand-600"
-              onClick={() => {
-                setEditing(row)
-                setFormOpen(true)
-              }}
-              aria-label="Edit payment"
-            >
-              <EditIcon className="h-4 w-4" />
-            </button>
-            <button
-              type="button"
-              className="rounded-lg p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-600"
-              onClick={() => setDeleting(row)}
-              aria-label="Delete payment"
-            >
-              <TrashIcon className="h-4 w-4" />
-            </button>
-          </div>
-        ) : null,
+      render: (row) => (
+        <div className="flex justify-end gap-1">
+          <button
+            type="button"
+            className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-brand-600 dark:hover:bg-slate-800 dark:hover:text-brand-400"
+            onClick={(event) => {
+              event.stopPropagation()
+              navigate(`/payments/${row.id}`)
+            }}
+            aria-label="View payment"
+          >
+            <ViewIcon className="h-4 w-4" />
+          </button>
+          {canEdit ? (
+            <>
+              <button
+                type="button"
+                className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-brand-600 dark:hover:bg-slate-800 dark:hover:text-brand-400"
+                onClick={(event) => {
+                  event.stopPropagation()
+                  setEditing(row)
+                  setFormOpen(true)
+                }}
+                aria-label="Edit payment"
+              >
+                <EditIcon className="h-4 w-4" />
+              </button>
+              <button
+                type="button"
+                className="rounded-lg p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/40 dark:hover:text-red-400"
+                onClick={(event) => {
+                  event.stopPropagation()
+                  setDeleting(row)
+                }}
+                aria-label="Delete payment"
+              >
+                <TrashIcon className="h-4 w-4" />
+              </button>
+            </>
+          ) : null}
+        </div>
+      ),
     },
   ]
 
@@ -216,13 +240,18 @@ export default function PaymentList() {
           rows={list.rows}
           loading={list.loading}
           emptyMessage="No payments match these filters."
+          onRowClick={(row) => navigate(`/payments/${row.id}`)}
         />
 
         {list.rows.length > 0 && (
-          <div className="flex justify-end border-t border-slate-200 px-4 py-3 text-sm">
-            <span className="text-slate-500">
+          <div
+            className="flex justify-end border-t border-slate-200 px-4 py-3 text-sm dark:border-slate-800"
+          >
+            <span className="text-muted">
               Total on this page:{' '}
-              <span className="font-semibold text-slate-800">{formatMoney(pageTotal)}</span>
+              <span className="font-semibold text-slate-800 dark:text-slate-100">
+                {formatMoney(pageTotal)}
+              </span>
             </span>
           </div>
         )}

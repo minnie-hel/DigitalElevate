@@ -151,7 +151,7 @@ export default function ClientDetails() {
       </div>
 
       <div className="card">
-        <div className="flex flex-wrap gap-1 overflow-hidden border-b border-slate-200 px-2">
+        <div className="flex flex-wrap gap-1 overflow-hidden border-b border-slate-200 dark:border-slate-700 px-2">
           {TABS.map((name) => (
             <button
               key={name}
@@ -159,8 +159,8 @@ export default function ClientDetails() {
               onClick={() => setTab(name)}
               className={`whitespace-nowrap border-b-2 px-4 py-3 text-sm font-medium transition ${
                 tab === name
-                  ? 'border-brand-600 text-brand-700'
-                  : 'border-transparent text-slate-500 hover:text-slate-700'
+                  ? 'border-brand-600 text-brand-700 dark:border-brand-400 dark:text-brand-300'
+                  : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
               }`}
             >
               {name}
@@ -319,7 +319,7 @@ export default function ClientDetails() {
                     <li key={entry.id} className="flex gap-3">
                       <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-brand-500" />
                       <div>
-                        <p className="text-sm text-slate-700">
+                        <p className="text-sm text-slate-700 dark:text-slate-300">
                           <span className="font-medium">{entry.actor_name || 'System'}</span>{' '}
                           {entry.description}
                         </p>
@@ -362,12 +362,12 @@ function OverviewTab({ client }) {
         {rows.map(([label, value]) => (
           <div key={label} className="flex gap-4">
             <dt className="w-32 shrink-0 text-sm text-slate-500">{label}</dt>
-            <dd className="text-sm text-slate-800">{value || '-'}</dd>
+            <dd className="text-sm text-slate-800 dark:text-slate-100">{value || '-'}</dd>
           </div>
         ))}
       </dl>
       <div>
-        <h3 className="text-sm font-semibold text-slate-900">Notes</h3>
+        <h3 className="section-title">Notes</h3>
         <p className="mt-2 whitespace-pre-line text-sm text-slate-600">
           {client.notes || 'No notes recorded.'}
         </p>

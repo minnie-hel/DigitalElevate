@@ -167,7 +167,7 @@ export default function TeamForm({ open, member, onClose, onSaved }) {
               placeholder="React, Django, PostgreSQL"
               {...register('skills')}
             />
-            <p className="mt-1 text-xs text-slate-400">Separate skills with commas.</p>
+            <p className="mt-1 text-muted-xs">Separate skills with commas.</p>
           </div>
         </div>
       </form>

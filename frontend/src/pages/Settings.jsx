@@ -3,6 +3,7 @@ import { useForm } from 'react-hook-form'
 
 import Alert from '../components/Alert.jsx'
 import PageHeader from '../components/PageHeader.jsx'
+import PasswordInput from '../components/PasswordInput.jsx'
 import api, { apiErrorMessage } from '../services/api.js'
 import { useAuth } from '../context/AuthContext.jsx'
 import { humanise } from '../utils/format.js'
@@ -64,8 +65,8 @@ export default function Settings() {
       <PageHeader title="Settings" subtitle="Your account details and password." />
 
       <section className="card p-5">
-        <h2 className="text-sm font-semibold text-slate-900">Profile</h2>
-        <p className="mt-1 text-xs text-slate-500">
+        <h2 className="section-title">Profile</h2>
+        <p className="mt-1 text-muted-xs">
           Signed in as {user?.email} · role {humanise(user?.role)}
         </p>
 
@@ -119,7 +120,7 @@ export default function Settings() {
       </section>
 
       <section className="card mt-6 p-5">
-        <h2 className="text-sm font-semibold text-slate-900">Change password</h2>
+        <h2 className="section-title">Change password</h2>
 
         <form
           onSubmit={passwordForm.handleSubmit(changePassword)}
@@ -132,11 +133,9 @@ export default function Settings() {
             <label className="label" htmlFor="current_password">
               Current password
             </label>
-            <input
+            <PasswordInput
               id="current_password"
-              type="password"
               autoComplete="current-password"
-              className="input"
               {...passwordForm.register('current_password', {
                 required: 'Enter your current password.',
               })}
@@ -153,11 +152,9 @@ export default function Settings() {
               <label className="label" htmlFor="new_password">
                 New password
               </label>
-              <input
+              <PasswordInput
                 id="new_password"
-                type="password"
                 autoComplete="new-password"
-                className="input"
                 {...passwordForm.register('new_password', {
                   required: 'Enter a new password.',
                   minLength: { value: 8, message: 'Use at least 8 characters.' },
@@ -173,11 +170,9 @@ export default function Settings() {
               <label className="label" htmlFor="confirm_password">
                 Confirm new password
               </label>
-              <input
+              <PasswordInput
                 id="confirm_password"
-                type="password"
                 autoComplete="new-password"
-                className="input"
                 {...passwordForm.register('confirm_password', {
                   required: 'Confirm your new password.',
                 })}

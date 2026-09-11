@@ -5,7 +5,8 @@
 export default function StatusTabs({ options, value, onChange, className = '' }) {
   return (
     <div
-      className={`flex flex-wrap gap-0 overflow-hidden border-b border-slate-200 px-2 ${className}`}
+      className={`flex flex-wrap gap-0 overflow-hidden border-b border-slate-200 px-2
+        dark:border-slate-800 ${className}`}
       role="tablist"
     >
       {options.map((option) => {
@@ -20,8 +21,8 @@ export default function StatusTabs({ options, value, onChange, className = '' })
             className={[
               '-mb-px whitespace-nowrap border-b-2 px-4 py-2.5 text-sm font-medium transition',
               active
-                ? 'border-emerald-600 bg-emerald-50 text-emerald-800'
-                : 'border-transparent text-slate-500 hover:bg-slate-50 hover:text-slate-800',
+                ? 'border-emerald-600 bg-emerald-50 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300'
+                : 'border-transparent text-slate-500 hover:bg-slate-50 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200',
             ].join(' ')}
           >
             {option.label}

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 
 import Alert from '../../components/Alert.jsx'
 import ConfirmDialog from '../../components/ConfirmDialog.jsx'
@@ -8,7 +8,7 @@ import ListScreenToolbar from '../../components/ListScreenToolbar.jsx'
 import PageHeader from '../../components/PageHeader.jsx'
 import PrintHeader from '../../components/PrintHeader.jsx'
 import StatusBadge from '../../components/StatusBadge.jsx'
-import { EditIcon, TrashIcon } from '../../components/Icons.jsx'
+import { EditIcon, TrashIcon, ViewIcon } from '../../components/Icons.jsx'
 import TaskForm from './TaskForm.jsx'
 import api, { apiErrorMessage } from '../../services/api.js'
 import useList from '../../hooks/useList.js'
@@ -26,6 +26,7 @@ const STATUS_TABS = [
 ]
 
 export default function TaskList() {
+  const navigate = useNavigate()
   const [status, setStatus] = useState('')
   const [assignee, setAssignee] = useState('')
   const [priority, setPriority] = useState('')
@@ -74,6 +75,7 @@ export default function TaskList() {
         <input
           type="checkbox"
           checked={row.status === 'completed'}
+          onClick={(event) => event.stopPropagation()}
           onChange={() => toggleComplete(row)}
           className="h-4 w-4 rounded border-slate-300 text-brand-600 focus:ring-brand-500"
           aria-label={`Mark ${row.title} complete`}
@@ -87,13 +89,19 @@ export default function TaskList() {
         <div>
           <p
             className={`font-medium ${
-              row.status === 'completed' ? 'text-slate-400 line-through' : 'text-slate-800'
+              row.status === 'completed'
+                ? 'text-slate-400 line-through dark:text-slate-500'
+                : 'text-emphasis'
             }`}
           >
             {row.title}
           </p>
-          <p className="text-xs text-slate-500">
-            <Link to={`/projects/${row.project}`} className="hover:text-brand-600">
+          <p className="text-muted-xs">
+            <Link
+              to={`/projects/${row.project}`}
+              className="hover:text-brand-600"
+              onClick={(event) => event.stopPropagation()}
+            >
               {row.project_name}
             </Link>
             {row.client_name ? ` · ${row.client_name}` : ''}
@@ -102,19 +110,9 @@ export default function TaskList() {
       ),
     },
     {
-      key: 'assigned_to_name',
-      header: 'Assigned to',
-      render: (row) => row.assigned_to_name || <span className="text-slate-400">Unassigned</span>,
-    },
-    {
       key: 'status',
       header: 'Status',
       render: (row) => <StatusBadge value={row.status} label={row.status_display} />,
-    },
-    {
-      key: 'priority',
-      header: 'Priority',
-      render: (row) => <StatusBadge value={row.priority} label={row.priority_display} />,
     },
     {
       key: 'due_date',
@@ -134,8 +132,20 @@ export default function TaskList() {
         <div className="flex justify-end gap-1">
           <button
             type="button"
-            className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-brand-600"
-            onClick={() => {
+            className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-brand-600 dark:hover:bg-slate-800 dark:hover:text-brand-400"
+            onClick={(event) => {
+              event.stopPropagation()
+              navigate(`/tasks/${row.id}`)
+            }}
+            aria-label={`View ${row.title}`}
+          >
+            <ViewIcon className="h-4 w-4" />
+          </button>
+          <button
+            type="button"
+            className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-brand-600 dark:hover:bg-slate-800 dark:hover:text-brand-400"
+            onClick={(event) => {
+              event.stopPropagation()
               setEditing(row)
               setFormOpen(true)
             }}
@@ -145,8 +155,11 @@ export default function TaskList() {
           </button>
           <button
             type="button"
-            className="rounded-lg p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-600"
-            onClick={() => setDeleting(row)}
+            className="rounded-lg p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/40 dark:hover:text-red-400"
+            onClick={(event) => {
+              event.stopPropagation()
+              setDeleting(row)
+            }}
             aria-label={`Delete ${row.title}`}
           >
             <TrashIcon className="h-4 w-4" />
@@ -260,6 +273,7 @@ export default function TaskList() {
           rows={list.rows}
           loading={list.loading}
           emptyMessage="No tasks match these filters."
+          onRowClick={(row) => navigate(`/tasks/${row.id}`)}
         />
       </div>
 

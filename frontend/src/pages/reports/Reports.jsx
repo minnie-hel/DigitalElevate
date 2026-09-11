@@ -29,15 +29,13 @@ const REPORT_TITLES = {
 function ReportTable({ title, columns, rows, footer, emptyMessage = 'No data.' }) {
   return (
     <section className="card overflow-hidden">
-      <h3 className="border-b border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-900">
-        {title}
-      </h3>
+      <h3 className="section-title border-b border-divider px-4 py-2.5">{title}</h3>
       {rows.length === 0 ? (
-        <p className="px-4 py-8 text-center text-sm text-slate-500">{emptyMessage}</p>
+        <p className="px-4 py-8 text-center text-body text-muted">{emptyMessage}</p>
       ) : (
         <div className="table-wrap">
-          <table className="min-w-full divide-y divide-slate-200">
-            <thead className="bg-slate-50">
+          <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
+            <thead className="surface-subtle">
               <tr>
                 {columns.map((column) => (
                   <th
@@ -49,7 +47,7 @@ function ReportTable({ title, columns, rows, footer, emptyMessage = 'No data.' }
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
               {rows.map((row, index) => (
                 <tr key={row.key ?? index}>
                   {columns.map((column) => (
@@ -64,7 +62,7 @@ function ReportTable({ title, columns, rows, footer, emptyMessage = 'No data.' }
               ))}
             </tbody>
             {footer && (
-              <tfoot className="border-t-2 border-slate-300 bg-slate-50 font-semibold">
+              <tfoot className="surface-subtle border-t-2 border-slate-300 font-semibold dark:border-slate-600">
                 <tr>
                   {columns.map((column) => (
                     <td

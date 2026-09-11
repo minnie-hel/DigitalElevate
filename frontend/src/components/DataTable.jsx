@@ -26,13 +26,13 @@ export default function DataTable({
   }
 
   if (!rows?.length) {
-    return <p className="py-16 text-center text-sm text-slate-500">{emptyMessage}</p>
+    return <p className="py-16 text-center text-sm text-slate-500 dark:text-slate-400">{emptyMessage}</p>
   }
 
   return (
     <div className="table-wrap">
-      <table className="min-w-full divide-y divide-slate-200">
-        <thead className="bg-slate-50">
+      <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-800">
+        <thead className="bg-slate-50 dark:bg-slate-800/80">
           <tr>
             {columns.map((column) => (
               <th
@@ -47,12 +47,16 @@ export default function DataTable({
             ))}
           </tr>
         </thead>
-        <tbody className="divide-y divide-slate-100 bg-white">
+        <tbody className="divide-y divide-slate-100 bg-white dark:divide-slate-800 dark:bg-slate-900">
           {rows.map((row) => (
             <tr
               key={rowKey(row)}
               onClick={onRowClick ? () => onRowClick(row) : undefined}
-              className={onRowClick ? 'cursor-pointer hover:bg-slate-50' : 'hover:bg-slate-50'}
+              className={
+                onRowClick
+                  ? 'cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/60'
+                  : 'hover:bg-slate-50 dark:hover:bg-slate-800/60'
+              }
             >
               {columns.map((column) => (
                 <td

@@ -61,8 +61,8 @@ export default function InvoiceList() {
       header: 'Invoice',
       render: (row) => (
         <div>
-          <p className="font-medium text-slate-800">{row.invoice_number}</p>
-          <p className="text-xs text-slate-500">{formatDate(row.issue_date)}</p>
+          <p className="text-emphasis">{row.invoice_number}</p>
+          <p className="text-muted-xs">{formatDate(row.issue_date)}</p>
         </div>
       ),
     },
@@ -78,7 +78,7 @@ export default function InvoiceList() {
           >
             {row.client_name}
           </Link>
-          {row.project_name && <p className="text-xs text-slate-500">{row.project_name}</p>}
+          {row.project_name && <p className="text-muted-xs">{row.project_name}</p>}
         </div>
       ),
     },
@@ -130,7 +130,7 @@ export default function InvoiceList() {
           <div className="flex justify-end gap-1" onClick={(event) => event.stopPropagation()}>
             <button
               type="button"
-              className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-brand-600"
+              className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-brand-600 dark:hover:bg-slate-800 dark:hover:text-brand-400"
               onClick={() => {
                 setEditing(row)
                 setFormOpen(true)
@@ -141,7 +141,7 @@ export default function InvoiceList() {
             </button>
             <button
               type="button"
-              className="rounded-lg p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-600"
+              className="rounded-lg p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/40 dark:hover:text-red-400"
               onClick={() => setDeleting(row)}
               aria-label={`Delete ${row.invoice_number}`}
             >

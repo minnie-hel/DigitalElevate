@@ -8,7 +8,7 @@ function LayoutShell() {
   const { mobileOpen, setMobileOpen, collapsed } = useSidebar()
 
   return (
-    <div className="min-h-screen bg-slate-100">
+    <div className="min-h-screen bg-slate-100 dark:bg-slate-950">
       <div className="no-print">
         <Sidebar open={mobileOpen} collapsed={collapsed} onNavigate={() => setMobileOpen(false)} />
       </div>

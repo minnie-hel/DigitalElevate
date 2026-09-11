@@ -59,12 +59,16 @@ export default function Sidebar({ open, collapsed, onNavigate }) {
           ${open ? 'translate-x-0' : '-translate-x-full'}
           ${hiddenOnDesktop}`}
       >
-        <div className="flex h-16 shrink-0 items-center gap-2 border-b border-slate-200 bg-white px-4">
+        <div
+          className="flex h-16 shrink-0 items-center gap-2 border-b border-slate-200 bg-white px-4
+            dark:border-slate-700"
+        >
           <Logo variant="wordmark" className="w-32 shrink-0" />
           <button
             type="button"
             onClick={toggleCollapsed}
-            className="ml-auto hidden shrink-0 rounded-lg p-2 text-slate-500 hover:bg-slate-100 lg:inline-flex"
+            className="ml-auto hidden shrink-0 rounded-lg p-2 text-slate-500 hover:bg-slate-100
+              dark:text-slate-400 dark:hover:bg-slate-800 lg:inline-flex"
             aria-label="Hide sidebar"
             title="Hide sidebar"
           >

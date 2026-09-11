@@ -1,9 +1,9 @@
 export default function StatCard({ label, value, hint, tone = 'default', icon }) {
   const tones = {
-    default: 'text-slate-900',
-    positive: 'text-emerald-600',
-    warning: 'text-amber-600',
-    danger: 'text-red-600',
+    default: 'text-slate-900 dark:text-slate-100',
+    positive: 'text-emerald-600 dark:text-emerald-400',
+    warning: 'text-amber-600 dark:text-amber-400',
+    danger: 'text-red-600 dark:text-red-400',
   }
 
   // Deliberately compact: the dashboard shows eight of these at once and the
@@ -11,11 +11,11 @@ export default function StatCard({ label, value, hint, tone = 'default', icon })
   return (
     <div className="card px-4 py-3">
       <div className="flex items-start justify-between gap-2">
-        <p className="text-xs font-medium uppercase tracking-wide text-slate-500">{label}</p>
-        {icon && <span className="text-slate-300">{icon}</span>}
+        <p className="text-xs font-medium uppercase tracking-wide text-muted">{label}</p>
+        {icon && <span className="text-slate-300 dark:text-slate-600">{icon}</span>}
       </div>
       <p className={`mt-1 text-xl font-semibold tabular-nums ${tones[tone]}`}>{value}</p>
-      {hint && <p className="mt-0.5 text-xs text-slate-400">{hint}</p>}
+      {hint && <p className="mt-0.5 text-xs text-slate-400 dark:text-slate-500">{hint}</p>}
     </div>
   )
 }

@@ -191,9 +191,45 @@ export const PanelLeftIcon = (props) => (
   </Svg>
 )
 
+export const SunIcon = (props) => (
+  <Svg {...props}>
+    <circle cx="12" cy="12" r="4" />
+    <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
+  </Svg>
+)
+
+export const MoonIcon = (props) => (
+  <Svg {...props}>
+    <path d="M21 14.5A8.5 8.5 0 1 1 9.5 3 7 7 0 0 0 21 14.5Z" />
+  </Svg>
+)
+
 export const SendIcon = (props) => (
   <Svg {...props}>
     <path d="M22 2 11 13" />
     <path d="M22 2l-7 20-4-9-9-4Z" />
+  </Svg>
+)
+
+export const EyeIcon = (props) => (
+  <Svg {...props}>
+    <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z" />
+    <circle cx="12" cy="12" r="3" />
+  </Svg>
+)
+
+export const EyeOffIcon = (props) => (
+  <Svg {...props}>
+    <path d="M3 3l18 18" />
+    <path d="M10.6 10.6a2 2 0 0 0 2.8 2.8" />
+    <path d="M9.9 5.1A10.7 10.7 0 0 1 12 5c6.5 0 10 7 10 7a18.2 18.2 0 0 1-4.1 5.2" />
+    <path d="M6.1 6.1A18.5 18.5 0 0 0 2 12s3.5 7 10 7a10.2 10.2 0 0 0 4.9-1.2" />
+  </Svg>
+)
+
+export const ViewIcon = (props) => (
+  <Svg {...props}>
+    <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z" />
+    <circle cx="12" cy="12" r="3" />
   </Svg>
 )
