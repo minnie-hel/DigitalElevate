@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import api, { apiErrorMessage, unwrapList } from '../services/api.js'
+import { useAuth } from '../context/AuthContext.jsx'
 
 /**
  * Fetches a paginated DRF list endpoint with search and filter support.
@@ -9,6 +10,7 @@ import api, { apiErrorMessage, unwrapList } from '../services/api.js'
  * object without causing a request on every render.
  */
 export default function useList(endpoint, { filters = {}, pageSize = 20 } = {}) {
+  const { isAuthenticated, loading: authLoading } = useAuth()
   const [rows, setRows] = useState([])
   const [count, setCount] = useState(0)
   const [page, setPage] = useState(1)
@@ -48,8 +50,14 @@ export default function useList(endpoint, { filters = {}, pageSize = 20 } = {}) 
   }, [endpoint, page, currentPageSize, search, filterKey, reloadToken])
 
   useEffect(() => {
+    if (authLoading || !isAuthenticated) {
+      setRows([])
+      setCount(0)
+      setLoading(false)
+      return
+    }
     load()
-  }, [load])
+  }, [authLoading, isAuthenticated, load])
 
   // Any change of filter, search term or page size invalidates the page number.
   useEffect(() => {

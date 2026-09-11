@@ -76,6 +76,9 @@ class ElevateTokenObtainPairSerializer(TokenObtainPairSerializer):
         return token
 
     def validate(self, attrs):
+        email = attrs.get(self.username_field)
+        if isinstance(email, str):
+            attrs[self.username_field] = User.objects.normalize_email(email.strip())
         data = super().validate(attrs)
         data["user"] = UserSerializer(self.user).data
         return data

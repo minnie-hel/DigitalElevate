@@ -29,6 +29,8 @@ class LoginView(TokenObtainPairView):
     """POST /api/auth/login/ -> access + refresh tokens and the user object."""
 
     serializer_class = ElevateTokenObtainPairSerializer
+    permission_classes = [AllowAny]
+    authentication_classes = []
 
 
 class LogoutView(APIView):

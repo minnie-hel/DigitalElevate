@@ -18,10 +18,12 @@ import Spinner from '../components/Spinner.jsx'
 import StatCard from '../components/StatCard.jsx'
 import StatusBadge from '../components/StatusBadge.jsx'
 import api, { apiErrorMessage } from '../services/api.js'
+import { useAuth } from '../context/AuthContext.jsx'
 import { useTheme } from '../context/ThemeContext.jsx'
 import { formatDate, formatMoney, formatMoneyShort, timeAgo } from '../utils/format.js'
 
 export default function Dashboard() {
+  const { isAuthenticated, loading: authLoading } = useAuth()
   const { isDark } = useTheme()
   const [stats, setStats] = useState(null)
   const [revenue, setRevenue] = useState([])
@@ -29,6 +31,8 @@ export default function Dashboard() {
   const [error, setError] = useState('')
 
   useEffect(() => {
+    if (authLoading || !isAuthenticated) return undefined
+
     let cancelled = false
 
     async function load() {
@@ -56,7 +60,7 @@ export default function Dashboard() {
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [authLoading, isAuthenticated])
 
   if (loading) {
     return (

@@ -3,7 +3,9 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 import api, {
   apiErrorMessage,
   HAS_USERS_KEY,
+  markAuthBootstrapComplete,
   refreshAccessToken,
+  syncApiScope,
   tokenStore,
 } from '../services/api.js'
 
@@ -21,13 +23,13 @@ export function AuthProvider({ children }) {
   // Restore the session on first load so a refresh does not sign the user out.
   useEffect(() => {
     let cancelled = false
+    syncApiScope()
 
     async function restore() {
-      if (!tokenStore.access && !tokenStore.refresh) {
-        setLoading(false)
-        return
-      }
       try {
+        if (!tokenStore.access && !tokenStore.refresh) {
+          return
+        }
         if (!tokenStore.access && tokenStore.refresh) {
           await refreshAccessToken()
         }
@@ -40,6 +42,7 @@ export function AuthProvider({ children }) {
         if (!cancelled) signOutLocally()
       } finally {
         if (!cancelled) setLoading(false)
+        markAuthBootstrapComplete()
       }
     }
 
@@ -57,7 +60,11 @@ export function AuthProvider({ children }) {
 
   const login = useCallback(async (email, password) => {
     try {
-      const { data } = await api.post('/auth/login/', { email, password })
+      tokenStore.clear()
+      const { data } = await api.post('/auth/login/', {
+        email: email.trim(),
+        password,
+      })
       tokenStore.save({ access: data.access, refresh: data.refresh })
       localStorage.setItem(HAS_USERS_KEY, '1')
       setUser(data.user)
