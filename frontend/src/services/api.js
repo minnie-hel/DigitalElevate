@@ -71,6 +71,68 @@ function forceSignOut() {
   window.dispatchEvent(new Event('elevate:signed-out'))
 }
 
+function parseJwtPayload(token) {
+  try {
+    const segment = token.split('.')[1]
+    if (!segment) return null
+    const base64 = segment.replace(/-/g, '+').replace(/_/g, '/')
+    return JSON.parse(atob(base64))
+  } catch {
+    return null
+  }
+}
+
+/** True when access token is missing or past expiry (with a small clock skew). */
+export function isAccessTokenExpired(skewSeconds = 60) {
+  const token = tokenStore.access
+  if (!token) return true
+  const payload = parseJwtPayload(token)
+  if (!payload?.exp) return false
+  return payload.exp * 1000 <= Date.now() + skewSeconds * 1000
+}
+
+let sessionRestorePromise = null
+
+/**
+ * One shared restore per page load: refresh if needed, then GET /auth/me/.
+ * Returns user JSON or null (invalid/expired session — tokens cleared).
+ */
+export async function restoreSessionFromTokens() {
+  if (sessionRestorePromise) return sessionRestorePromise
+
+  sessionRestorePromise = (async () => {
+    try {
+      syncApiScope()
+      if (!tokenStore.access && !tokenStore.refresh) {
+        return null
+      }
+      if ((!tokenStore.access || isAccessTokenExpired()) && tokenStore.refresh) {
+        await refreshAccessToken()
+      }
+      if (!tokenStore.access) {
+        return null
+      }
+      const { data } = await api.get('/auth/me/')
+      return data
+    } catch {
+      tokenStore.clear()
+      return null
+    } finally {
+      markAuthBootstrapComplete()
+    }
+  })()
+
+  try {
+    return await sessionRestorePromise
+  } finally {
+    sessionRestorePromise = null
+  }
+}
+
+function isSessionProbePath(url = '') {
+  return url.includes('/auth/me')
+}
+
 const api = axios.create({
   baseURL: BASE_URL,
   headers: { 'Content-Type': 'application/json' },
@@ -141,12 +203,19 @@ api.interceptors.response.use(
         config.headers.Authorization = `Bearer ${access}`
         return api(config)
       } catch {
-        forceSignOut()
+        if (!isSessionProbePath(url)) {
+          forceSignOut()
+        }
         return Promise.reject(error)
       }
     }
 
-    if (response.status === 401 && hadAuth && !isPublic) {
+    if (
+      response.status === 401 &&
+      hadAuth &&
+      !isPublic &&
+      !isSessionProbePath(url)
+    ) {
       forceSignOut()
     }
 

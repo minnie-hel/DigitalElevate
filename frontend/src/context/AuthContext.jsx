@@ -3,9 +3,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 import api, {
   apiErrorMessage,
   HAS_USERS_KEY,
-  markAuthBootstrapComplete,
-  refreshAccessToken,
-  syncApiScope,
+  restoreSessionFromTokens,
   tokenStore,
 } from '../services/api.js'
 
@@ -21,39 +19,23 @@ export function AuthProvider({ children }) {
     setUser(null)
   }, [])
 
-  // Restore the session on first load so a refresh does not sign the user out.
   useEffect(() => {
     let cancelled = false
-    syncApiScope()
 
-    async function restore() {
-      try {
-        if (!tokenStore.access && !tokenStore.refresh) {
-          return
-        }
-        if (!tokenStore.access && tokenStore.refresh) {
-          await refreshAccessToken()
-        }
-        const { data } = await api.get('/auth/me/')
-        if (!cancelled) {
-          setUser(data)
-          localStorage.setItem(HAS_USERS_KEY, '1')
-        }
-      } catch {
-        if (!cancelled) signOutLocally()
-      } finally {
-        markAuthBootstrapComplete()
-        if (!cancelled) setLoading(false)
+    restoreSessionFromTokens().then((profile) => {
+      if (cancelled) return
+      if (profile) {
+        setUser(profile)
+        localStorage.setItem(HAS_USERS_KEY, '1')
       }
-    }
+      setLoading(false)
+    })
 
-    restore()
     return () => {
       cancelled = true
     }
-  }, [signOutLocally])
+  }, [])
 
-  // The API layer raises this when a refresh token has expired.
   useEffect(() => {
     window.addEventListener('elevate:signed-out', signOutLocally)
     return () => window.removeEventListener('elevate:signed-out', signOutLocally)
@@ -61,7 +43,6 @@ export function AuthProvider({ children }) {
 
   const login = useCallback(async (email, password) => {
     try {
-      // Replace any stale JWT on this device; does not delete server-side records.
       tokenStore.clear()
       const { data } = await api.post('/auth/login/', {
         email: email.trim(),
