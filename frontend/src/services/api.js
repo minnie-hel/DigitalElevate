@@ -61,6 +61,11 @@ function isPublicAuthPath(url = '') {
   )
 }
 
+/** Session restore uses /auth/me/; must not wait on bootstrap (that would deadlock). */
+function skipsAuthBootstrapWait(url = '') {
+  return isPublicAuthPath(url) || url.includes('/auth/me')
+}
+
 function forceSignOut() {
   tokenStore.clear()
   window.dispatchEvent(new Event('elevate:signed-out'))
@@ -69,10 +74,11 @@ function forceSignOut() {
 const api = axios.create({
   baseURL: BASE_URL,
   headers: { 'Content-Type': 'application/json' },
+  timeout: 30000,
 })
 
 api.interceptors.request.use(async (config) => {
-  if (!isPublicAuthPath(config.url)) {
+  if (!skipsAuthBootstrapWait(config.url)) {
     await waitForAuthBootstrap()
   }
 

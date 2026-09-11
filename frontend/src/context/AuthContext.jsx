@@ -42,8 +42,8 @@ export function AuthProvider({ children }) {
       } catch {
         if (!cancelled) signOutLocally()
       } finally {
-        if (!cancelled) setLoading(false)
         markAuthBootstrapComplete()
+        if (!cancelled) setLoading(false)
       }
     }
 

@@ -46,7 +46,7 @@ export default function App() {
       <Route
         path="/login"
         element={
-          loading && (tokenStore.access || tokenStore.refresh) ? (
+          loading && (tokenStore.access || tokenStore.refresh) && !isAuthenticated ? (
             <FullPageSpinner />
           ) : isAuthenticated ? (
             <Navigate to="/" replace />
