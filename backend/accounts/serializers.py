@@ -78,7 +78,9 @@ class ElevateTokenObtainPairSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):
         email = attrs.get(self.username_field)
         if isinstance(email, str):
-            attrs[self.username_field] = User.objects.normalize_email(email.strip())
+            normalized = User.objects.normalize_email(email.strip()).lower()
+            match = User.objects.filter(email__iexact=normalized).first()
+            attrs[self.username_field] = match.email if match else normalized
         data = super().validate(attrs)
         data["user"] = UserSerializer(self.user).data
         return data
@@ -110,7 +112,7 @@ class SetupSerializer(serializers.Serializer):
     last_name = serializers.CharField(required=False, allow_blank=True, default="")
 
     def validate_email(self, value):
-        return User.objects.normalize_email(value)
+        return User.objects.normalize_email(value).lower()
 
     def create(self, validated_data):
         return User.objects.create_superuser(

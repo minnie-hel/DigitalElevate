@@ -9,10 +9,6 @@ import api, { apiErrorMessage, HAS_USERS_KEY } from '../services/api.js'
 import { useAuth } from '../context/AuthContext.jsx'
 import { useTheme } from '../context/ThemeContext.jsx'
 
-function hadUsersBefore() {
-  return localStorage.getItem(HAS_USERS_KEY) === '1'
-}
-
 export default function Login() {
   const { login, loading: authLoading } = useAuth()
   const { isDark, toggleMode } = useTheme()
@@ -21,7 +17,7 @@ export default function Login() {
   const [error, setError] = useState('')
 
   useEffect(() => {
-    if (sessionStorage.getItem(HAS_USERS_KEY) === '1' && !hadUsersBefore()) {
+    if (sessionStorage.getItem(HAS_USERS_KEY) === '1' && !localStorage.getItem(HAS_USERS_KEY)) {
       localStorage.setItem(HAS_USERS_KEY, '1')
     }
   }, [])
@@ -42,11 +38,11 @@ export default function Login() {
         if (cancelled) return
 
         const serverNeedsSetup = data?.needs_setup === true
-        // Never show "create account" on this browser after a successful login before.
-        const showFirstTimeSetup = serverNeedsSetup && !hadUsersBefore()
-        setNeedsSetup(showFirstTimeSetup)
+        setNeedsSetup(serverNeedsSetup)
         if (!serverNeedsSetup) {
           localStorage.setItem(HAS_USERS_KEY, '1')
+        } else {
+          localStorage.removeItem(HAS_USERS_KEY)
         }
       } catch {
         if (!cancelled) {
@@ -67,7 +63,20 @@ export default function Login() {
   async function onSignIn(values) {
     setError('')
     const result = await login(values.email.trim(), values.password)
-    if (!result.ok) setError(result.error)
+    if (result.ok) return
+
+    let message = result.error
+    try {
+      const { data } = await api.get('/auth/setup/')
+      if (data?.needs_setup === true) {
+        setNeedsSetup(true)
+        message =
+          'No login account exists on this server yet (often after a redeploy without PostgreSQL). Create an administrator below, or reset a password with Railway: python manage.py create_admin --email you@example.com --password YourPassword'
+      }
+    } catch {
+      // Keep the sign-in error from the API.
+    }
+    setError(message)
   }
 
   async function onSetup(values) {
