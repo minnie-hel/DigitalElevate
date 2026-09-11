@@ -5,7 +5,6 @@ Local development runs on SQLite by default. Production simply sets
 DATABASE_URL to a Postgres URL - no code change required.
 """
 
-from django.core.exceptions import ImproperlyConfigured
 from datetime import timedelta
 from pathlib import Path
 from urllib.parse import urlparse
@@ -13,6 +12,7 @@ from urllib.parse import urlparse
 import dj_database_url
 from dotenv import load_dotenv
 import os
+import sys
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 FRONTEND_DIST = BASE_DIR / "frontend_dist"
@@ -158,12 +158,33 @@ ASGI_APPLICATION = "config.asgi.application"
 # ---------------------------------------------------------------------------
 
 _SQLITE_DEFAULT = f"sqlite:///{BASE_DIR / 'db.sqlite3'}"
-_DATABASE_URL = os.getenv("DATABASE_URL", "").strip()
 
-if ON_RAILWAY and (not _DATABASE_URL or _DATABASE_URL.startswith("sqlite")):
-    raise ImproperlyConfigured(
-        "Railway deploy requires PostgreSQL. Open the web service → Variables → add a reference "
-        "to the PostgreSQL service DATABASE_URL, then redeploy. Without it the app cannot start."
+
+def _resolve_database_url() -> str:
+    """Railway Postgres may appear as DATABASE_URL or DATABASE_PRIVATE_URL on the web service."""
+    for name in (
+        "DATABASE_URL",
+        "DATABASE_PRIVATE_URL",
+        "DATABASE_PUBLIC_URL",
+        "POSTGRES_URL",
+        "POSTGRESQL_URL",
+    ):
+        raw = os.getenv(name, "").strip()
+        if raw and not raw.startswith("sqlite"):
+            return raw
+    return ""
+
+
+_DATABASE_URL = _resolve_database_url()
+
+if ON_RAILWAY and not _DATABASE_URL:
+    print(
+        "\n*** Railway: Postgres is not linked to this web service yet. "
+        "Open DigitalElevate → Variables → + New Variable → Variable Reference → "
+        "select your PostgreSQL service → DATABASE_URL → Deploy. "
+        "Until then the app uses temporary SQLite (data lost on redeploy). ***\n",
+        file=sys.stderr,
+        flush=True,
     )
 
 DATABASES = {
@@ -173,6 +194,9 @@ DATABASES = {
         conn_health_checks=True,
     )
 }
+
+# Exposed for API diagnostics (e.g. /api/auth/setup/).
+RESOLVED_DATABASE_URL = _DATABASE_URL
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 

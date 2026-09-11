@@ -23,13 +23,39 @@ This project ships as **one web service**: Gunicorn runs Django, serves the REST
 
 3. **Add PostgreSQL** → Railway creates a Postgres service.
 
-4. **Connect Postgres to the web app** (required — otherwise login accounts and data are lost on every deploy):
+4. **Connect Postgres to DigitalElevate** (required):
 
-   - Open your **web** service (not Postgres) → **Variables**.
-   - **Add variable reference** (or “New variable” → reference): choose the **PostgreSQL** service → **`DATABASE_URL`**.
-   - Redeploy the web service. On boot, `migrate` creates/updates all tables in Postgres.
+   **Option A — RAW Editor (fastest)**
 
-   Check: open `https://YOUR-APP.up.railway.app/api/auth/setup/` — you should see `"database": "postgresql"` and `"user_count": 1` (or more) after accounts exist.
+   1. Project → **DigitalElevate** (web app, not the database).
+   2. **Variables** → **RAW Editor**.
+   3. Paste (change `Postgres` if your DB service has another name — check the left sidebar):
+
+      ```env
+      DATABASE_URL=${{ Postgres.DATABASE_URL }}
+      SECRET_KEY=your-long-random-secret
+      ```
+
+   4. **Deploy** (Railway may show “staged changes” — deploy to apply).
+
+   **Option B — Import from repo**
+
+   1. Commit includes [`.env.production`](../.env.production) with the `DATABASE_URL` reference.
+   2. DigitalElevate → **Variables** → use **Suggested variables** / import from `.env.production`.
+   3. Add `SECRET_KEY` separately (never commit real secrets).
+   4. Deploy.
+
+   **Option C — CLI**
+
+   ```bash
+   npm install -g @railway/cli
+   railway login
+   railway link
+   bash scripts/railway-set-postgres-ref.sh Postgres
+   ```
+
+   **Verify:** `https://digitalelevate-production.up.railway.app/api/auth/setup/`  
+   → `"postgres_linked": true`, `"database": "postgresql"`.
 
 5. **Generate a public URL** (no custom domain needed):
 

@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.conf import settings
 from django.db import connection
 from django.db.models import Count, Q
 from rest_framework import status, viewsets
@@ -111,11 +112,14 @@ class SetupView(APIView):
     def get(self, request):
         engine = connection.settings_dict.get("ENGINE", "")
         user_count = User.objects.count()
+        using_postgres = "postgresql" in engine
         return Response(
             {
                 "needs_setup": user_count == 0,
                 "user_count": user_count,
-                "database": "postgresql" if "postgresql" in engine else "other",
+                "database": "postgresql" if using_postgres else "sqlite",
+                "postgres_linked": using_postgres,
+                "database_url_set": bool(getattr(settings, "RESOLVED_DATABASE_URL", "")),
             }
         )
 
