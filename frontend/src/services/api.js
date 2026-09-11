@@ -4,6 +4,8 @@ const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api'
 
 export const TOKEN_KEY = 'elevate.access'
 export const REFRESH_KEY = 'elevate.refresh'
+/** Set after a successful login or when the API reports users already exist. */
+export const HAS_USERS_KEY = 'elevate.hasUsers'
 
 export const tokenStore = {
   get access() {
@@ -40,7 +42,10 @@ api.interceptors.request.use((config) => {
 // refreshes and invalidate its own new token.
 let refreshPromise = null
 
-function refreshAccessToken() {
+export function refreshAccessToken() {
+  if (!tokenStore.refresh) {
+    return Promise.reject(new Error('No refresh token'))
+  }
   if (!refreshPromise) {
     refreshPromise = axios
       .post(`${BASE_URL}/auth/refresh/`, { refresh: tokenStore.refresh })

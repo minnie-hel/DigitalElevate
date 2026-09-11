@@ -1,6 +1,11 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 
-import api, { apiErrorMessage, tokenStore } from '../services/api.js'
+import api, {
+  apiErrorMessage,
+  HAS_USERS_KEY,
+  refreshAccessToken,
+  tokenStore,
+} from '../services/api.js'
 
 const AuthContext = createContext(null)
 
@@ -18,13 +23,19 @@ export function AuthProvider({ children }) {
     let cancelled = false
 
     async function restore() {
-      if (!tokenStore.access) {
+      if (!tokenStore.access && !tokenStore.refresh) {
         setLoading(false)
         return
       }
       try {
+        if (!tokenStore.access && tokenStore.refresh) {
+          await refreshAccessToken()
+        }
         const { data } = await api.get('/auth/me/')
-        if (!cancelled) setUser(data)
+        if (!cancelled) {
+          setUser(data)
+          localStorage.setItem(HAS_USERS_KEY, '1')
+        }
       } catch {
         if (!cancelled) signOutLocally()
       } finally {
@@ -48,6 +59,7 @@ export function AuthProvider({ children }) {
     try {
       const { data } = await api.post('/auth/login/', { email, password })
       tokenStore.save({ access: data.access, refresh: data.refresh })
+      localStorage.setItem(HAS_USERS_KEY, '1')
       setUser(data.user)
       return { ok: true }
     } catch (error) {

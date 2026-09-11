@@ -5,18 +5,26 @@ import Alert from '../components/Alert.jsx'
 import Logo from '../components/Logo.jsx'
 import PasswordInput from '../components/PasswordInput.jsx'
 import { MoonIcon, SunIcon } from '../components/Icons.jsx'
-import api, { apiErrorMessage } from '../services/api.js'
+import api, { apiErrorMessage, HAS_USERS_KEY } from '../services/api.js'
 import { useAuth } from '../context/AuthContext.jsx'
 import { useTheme } from '../context/ThemeContext.jsx'
 
-const HAS_USERS_KEY = 'elevate.hasUsers'
+function hadUsersBefore() {
+  return localStorage.getItem(HAS_USERS_KEY) === '1'
+}
 
 export default function Login() {
-  const { login } = useAuth()
+  const { login, loading: authLoading } = useAuth()
   const { isDark, toggleMode } = useTheme()
-  const [setupChecked, setSetupChecked] = useState(() => sessionStorage.getItem(HAS_USERS_KEY) === '1')
+  const [setupChecked, setSetupChecked] = useState(false)
   const [needsSetup, setNeedsSetup] = useState(false)
   const [error, setError] = useState('')
+
+  useEffect(() => {
+    if (sessionStorage.getItem(HAS_USERS_KEY) === '1' && !hadUsersBefore()) {
+      localStorage.setItem(HAS_USERS_KEY, '1')
+    }
+  }, [])
 
   const signInForm = useForm({ defaultValues: { email: '', password: '' } })
   const setupForm = useForm({
@@ -24,6 +32,8 @@ export default function Login() {
   })
 
   useEffect(() => {
+    if (authLoading) return undefined
+
     let cancelled = false
 
     async function loadSetupState() {
@@ -31,12 +41,12 @@ export default function Login() {
         const { data } = await api.get('/auth/setup/')
         if (cancelled) return
 
-        const setup = Boolean(data.needs_setup)
-        setNeedsSetup(setup)
-        if (setup) {
-          sessionStorage.removeItem(HAS_USERS_KEY)
-        } else {
-          sessionStorage.setItem(HAS_USERS_KEY, '1')
+        const serverNeedsSetup = data?.needs_setup === true
+        // Never show "create account" on this browser after a successful login before.
+        const showFirstTimeSetup = serverNeedsSetup && !hadUsersBefore()
+        setNeedsSetup(showFirstTimeSetup)
+        if (!serverNeedsSetup) {
+          localStorage.setItem(HAS_USERS_KEY, '1')
         }
       } catch {
         if (!cancelled) {
@@ -52,7 +62,7 @@ export default function Login() {
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [authLoading])
 
   async function onSignIn(values) {
     setError('')
@@ -69,7 +79,7 @@ export default function Login() {
         first_name: values.first_name.trim(),
         last_name: values.last_name.trim(),
       })
-      sessionStorage.setItem(HAS_USERS_KEY, '1')
+      localStorage.setItem(HAS_USERS_KEY, '1')
       setNeedsSetup(false)
       const result = await login(values.email.trim(), values.password)
       if (!result.ok) {
