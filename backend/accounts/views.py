@@ -9,6 +9,7 @@ from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView
 
+from .throttling import LoginRateThrottle, SetupRateThrottle
 from activity.services import log_activity
 from core.permissions import IsAdmin, IsAdminOrManager
 
@@ -31,10 +32,19 @@ class LoginView(TokenObtainPairView):
     serializer_class = ElevateTokenObtainPairSerializer
     permission_classes = [AllowAny]
     authentication_classes = []
+    throttle_classes = [LoginRateThrottle]
 
 
 class LogoutView(APIView):
-    """POST /api/auth/logout/ -> blacklists the supplied refresh token."""
+    """
+    POST /api/auth/logout/ -> blacklists the supplied refresh token.
+
+    Only the token sent in the request is revoked (this browser/session).
+    Other devices signed in with the same account keep working until they sign out.
+    """
+
+    permission_classes = [AllowAny]
+    authentication_classes = []
 
     def post(self, request):
         refresh = request.data.get("refresh")
@@ -95,6 +105,7 @@ class SetupView(APIView):
 
     permission_classes = [AllowAny]
     authentication_classes = []
+    throttle_classes = [SetupRateThrottle]
 
     def get(self, request):
         return Response({"needs_setup": not User.objects.exists()})

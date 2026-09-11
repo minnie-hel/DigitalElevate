@@ -16,6 +16,7 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true)
 
   const signOutLocally = useCallback(() => {
+    // Only this browser's JWT is cleared. Company data in the database is unchanged.
     tokenStore.clear()
     setUser(null)
   }, [])
@@ -60,6 +61,7 @@ export function AuthProvider({ children }) {
 
   const login = useCallback(async (email, password) => {
     try {
+      // Replace any stale JWT on this device; does not delete server-side records.
       tokenStore.clear()
       const { data } = await api.post('/auth/login/', {
         email: email.trim(),

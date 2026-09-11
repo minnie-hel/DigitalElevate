@@ -14,6 +14,8 @@ export default function Login() {
   const { isDark, toggleMode } = useTheme()
   const [setupChecked, setSetupChecked] = useState(false)
   const [needsSetup, setNeedsSetup] = useState(false)
+  /** 'signin' | 'setup' — user can switch when first-time setup is offered. */
+  const [authMode, setAuthMode] = useState('signin')
   const [error, setError] = useState('')
 
   useEffect(() => {
@@ -39,6 +41,7 @@ export default function Login() {
 
         const serverNeedsSetup = data?.needs_setup === true
         setNeedsSetup(serverNeedsSetup)
+        setAuthMode(serverNeedsSetup ? 'setup' : 'signin')
         if (!serverNeedsSetup) {
           localStorage.setItem(HAS_USERS_KEY, '1')
         } else {
@@ -100,7 +103,12 @@ export default function Login() {
   }
 
   const busy = signInForm.formState.isSubmitting || setupForm.formState.isSubmitting
-  const showSetup = setupChecked && needsSetup
+  const showSetupForm = setupChecked && authMode === 'setup' && needsSetup
+
+  function switchMode(mode) {
+    setAuthMode(mode)
+    setError('')
+  }
 
   return (
     <div className="relative flex min-h-screen items-center justify-center bg-slate-900 px-4 py-12 dark:bg-slate-950">
@@ -118,17 +126,57 @@ export default function Login() {
           <Logo className="mx-auto w-60 max-w-full" />
 
           <div className="mt-5 border-t border-slate-100 pt-5 dark:border-slate-800">
+            {setupChecked && needsSetup ? (
+              <div
+                className="mb-4 flex rounded-lg border border-slate-200 bg-slate-50 p-1
+                  dark:border-slate-700 dark:bg-slate-800/80"
+                role="tablist"
+                aria-label="Sign in or create account"
+              >
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={authMode === 'signin'}
+                  className={`flex-1 rounded-md px-3 py-2 text-sm font-medium transition ${
+                    authMode === 'signin'
+                      ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-900 dark:text-slate-100'
+                      : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200'
+                  }`}
+                  onClick={() => switchMode('signin')}
+                >
+                  Sign in
+                </button>
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={authMode === 'setup'}
+                  className={`flex-1 rounded-md px-3 py-2 text-sm font-medium transition ${
+                    authMode === 'setup'
+                      ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-900 dark:text-slate-100'
+                      : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200'
+                  }`}
+                  onClick={() => switchMode('setup')}
+                >
+                  Create account
+                </button>
+              </div>
+            ) : null}
+
             <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
-              {showSetup ? 'Create administrator' : 'Sign in'}
+              {showSetupForm ? 'Create administrator' : 'Sign in'}
             </h2>
             <p className="mt-1 text-muted-xs">
-              {showSetup
-                ? 'No accounts exist yet. Create the first administrator, then add clients and projects from the app.'
-                : 'Use your Elevate Digital work email.'}
+              {showSetupForm
+                ? 'First login only — creates the admin who can add other staff later.'
+                : 'Use your Elevate Digital work email and password.'}
+            </p>
+            <p className="mt-2 text-muted-xs">
+              Signing in only opens your session on this device. Clients, projects, invoices, and
+              other company data stay in the database and are shared with every authorised login.
             </p>
           </div>
 
-          {showSetup ? (
+          {showSetupForm ? (
             <form
               onSubmit={setupForm.handleSubmit(onSetup)}
               className="mt-6 space-y-4"
@@ -198,6 +246,17 @@ export default function Login() {
               <button type="submit" className="btn-primary w-full" disabled={busy}>
                 {busy ? 'Creating account...' : 'Create account and continue'}
               </button>
+
+              <p className="text-center text-sm text-slate-600 dark:text-slate-400">
+                Already have an account?{' '}
+                <button
+                  type="button"
+                  className="font-medium text-brand-600 hover:text-brand-700 dark:text-brand-400"
+                  onClick={() => switchMode('signin')}
+                >
+                  Sign in
+                </button>
+              </p>
             </form>
           ) : (
             <form
@@ -247,6 +306,19 @@ export default function Login() {
               <button type="submit" className="btn-primary w-full" disabled={busy}>
                 {busy ? 'Signing in...' : 'Sign in'}
               </button>
+
+              {needsSetup ? (
+                <p className="text-center text-sm text-slate-600 dark:text-slate-400">
+                  First time on this server?{' '}
+                  <button
+                    type="button"
+                    className="font-medium text-brand-600 hover:text-brand-700 dark:text-brand-400"
+                    onClick={() => switchMode('setup')}
+                  >
+                    Create administrator
+                  </button>
+                </p>
+              ) : null}
             </form>
           )}
         </div>
