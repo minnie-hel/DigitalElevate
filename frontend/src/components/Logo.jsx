@@ -1,23 +1,7 @@
 import { useState } from 'react'
 
 /**
- * Company logo.
- *
- * The artwork is a single square image: the ED monogram stacked above the
- * ELEVATE DIGITAL wordmark, on a white background. That drives the decisions
- * here:
- *
- *  - It always needs a white surface behind it, otherwise it disappears into
- *    a dark one such as the sidebar.
- *  - It carries a lot of empty margin, and the stacked shape does not fit a
- *    64px toolbar. Every variant therefore crops a region out of the square
- *    rather than scaling the whole thing down, so each one reads at its
- *    intended size. The regions are measured off the source artwork and are
- *    deliberately a little looser than the ink, to avoid clipping glyphs.
- *
- * Callers set one dimension; the other follows from the region's aspect
- * ratio. If `/logo.png` is missing, a coded wordmark is shown instead of a
- * broken-image icon.
+ * Company logo — cropped regions from `/logo.png` (no frame/card around the artwork).
  */
 
 const REGIONS = {
@@ -59,7 +43,7 @@ function Fallback({ variant, className }) {
   if (variant === 'mark') {
     return (
       <span
-        className={`flex items-center justify-center rounded-md bg-brand-600 text-xs font-bold
+        className={`flex items-center justify-center rounded-lg bg-brand-600 text-xs font-bold
           tracking-tight text-white ${className}`}
       >
         ED
@@ -68,14 +52,11 @@ function Fallback({ variant, className }) {
   }
 
   return (
-    <span
-      className={`flex flex-col justify-center rounded-md bg-white px-2 py-1.5 ring-1
-        ring-slate-200/90 ${className}`}
-    >
-      <span className="whitespace-nowrap text-base font-bold leading-none tracking-tight text-slate-900">
-        ELEVATE <span className="text-brand-600">DIGITAL</span>
+    <span className={`flex flex-col justify-center ${className}`}>
+      <span className="whitespace-nowrap text-base font-bold leading-none tracking-tight text-slate-900 dark:text-white">
+        ELEVATE <span className="text-brand-600 dark:text-brand-400">DIGITAL</span>
       </span>
-      <span className="mt-1 whitespace-nowrap text-[8px] uppercase tracking-[0.12em] text-slate-500">
+      <span className="mt-1 whitespace-nowrap text-[8px] uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400">
         Elevating brands. Driving growth.
       </span>
     </span>
@@ -91,19 +72,16 @@ export default function Logo({ variant = 'full', className = '' }) {
 
   return (
     <span
-      className={`relative block overflow-hidden rounded-md bg-white p-1 ring-1
-        ring-slate-200/90 ${className}`.trim()}
+      className={`relative block overflow-hidden ${className}`.trim()}
       style={{ aspectRatio: aspect }}
     >
-      <span className="relative block h-full w-full overflow-hidden rounded-[3px] bg-white">
-        <img
-          src="/logo.png"
-          alt={ALT[variant]}
-          onError={() => setFailed(true)}
-          className="absolute -translate-x-1/2 -translate-y-1/2"
-          style={{ width, left, top }}
-        />
-      </span>
+      <img
+        src="/logo.png"
+        alt={ALT[variant]}
+        onError={() => setFailed(true)}
+        className="absolute -translate-x-1/2 -translate-y-1/2"
+        style={{ width, left, top }}
+      />
     </span>
   )
 }

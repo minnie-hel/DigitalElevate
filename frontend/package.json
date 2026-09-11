@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:safe": "sh -c 'ulimit -n 65536 2>/dev/null; exec env VITE_USE_POLLING=1 vite'",
     "build": "vite build",
     "preview": "vite preview"
   },

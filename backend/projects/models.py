@@ -23,6 +23,16 @@ class Project(TimeStampedModel):
         HIGH = "high", "High"
         URGENT = "urgent", "Urgent"
 
+    class ServiceType(models.TextChoices):
+        WEBSITE = "website_development", "Website Development"
+        SOCIAL_MEDIA = "social_media", "Social Media"
+        BRANDING = "branding", "Branding"
+        SEO = "seo", "SEO"
+        ADVERTISING = "advertising", "Advertising"
+        SOFTWARE = "software_development", "Software Development"
+        MOBILE_APP = "mobile_app", "Mobile App"
+        OTHER = "other", "Other"
+
     OPEN_STATUSES = (Status.PLANNING, Status.IN_PROGRESS)
 
     client = models.ForeignKey(
@@ -32,6 +42,11 @@ class Project(TimeStampedModel):
     )
     name = models.CharField(max_length=255)
     description = models.TextField(blank=True)
+    service_type = models.CharField(
+        max_length=32,
+        choices=ServiceType.choices,
+        default=ServiceType.OTHER,
+    )
     start_date = models.DateField(null=True, blank=True)
     due_date = models.DateField(null=True, blank=True)
     budget = models.DecimalField(

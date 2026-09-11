@@ -22,7 +22,7 @@ class ProjectFilter(filters.FilterSet):
 
     class Meta:
         model = Project
-        fields = ["client", "status", "priority", "due_before", "due_after", "overdue"]
+        fields = ["client", "status", "priority", "service_type", "due_before", "due_after", "overdue"]
 
     def filter_overdue(self, queryset, name, value):
         today = timezone.localdate()

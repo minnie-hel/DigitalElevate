@@ -106,6 +106,12 @@ export default function ProjectDetails() {
             <Link to={`/clients/${project.client}`} className="hover:text-brand-600">
               {project.client_name}
             </Link>
+            {project.service_type_display ? (
+              <>
+                {' · '}
+                <span>{project.service_type_display}</span>
+              </>
+            ) : null}
           </>
         }
         actions={

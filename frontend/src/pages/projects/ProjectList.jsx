@@ -11,6 +11,7 @@ import ProgressBar from '../../components/ProgressBar.jsx'
 import StatusBadge from '../../components/StatusBadge.jsx'
 import { EditIcon, TrashIcon } from '../../components/Icons.jsx'
 import ProjectForm from './ProjectForm.jsx'
+import { serviceTypeLabel } from './serviceTypes.js'
 import api, { apiErrorMessage } from '../../services/api.js'
 import useList from '../../hooks/useList.js'
 import useOptions from '../../hooks/useOptions.js'
@@ -63,7 +64,12 @@ export default function ProjectList() {
       render: (row) => (
         <div>
           <p className="text-emphasis">{row.name}</p>
-          <p className="text-muted-xs">{row.client_name}</p>
+          <p className="text-muted-xs">
+            {row.client_name}
+            {row.service_type_display || row.service_type
+              ? ` · ${row.service_type_display || serviceTypeLabel(row.service_type)}`
+              : ''}
+          </p>
         </div>
       ),
     },
@@ -85,9 +91,10 @@ export default function ProjectList() {
       render: (row) => <StatusBadge value={row.status} label={row.status_display} />,
     },
     {
-      key: 'priority',
-      header: 'Priority',
-      render: (row) => <StatusBadge value={row.priority} label={row.priority_display} />,
+      key: 'service_type',
+      header: 'Service',
+      render: (row) =>
+        row.service_type_display || serviceTypeLabel(row.service_type) || '—',
     },
     {
       key: 'budget',
@@ -218,16 +225,16 @@ export default function ProjectList() {
               [
                 { header: 'Project', key: 'name' },
                 { header: 'Client', key: 'client_name' },
+                { header: 'Service type', key: 'service_type_display' },
                 { header: 'Status', key: 'status' },
-                { header: 'Priority', key: 'priority' },
                 { header: 'Budget', key: 'budget' },
                 { header: 'Start', key: 'start_date' },
-                { header: 'End', key: 'end_date' },
+                { header: 'Due', key: 'due_date' },
               ],
               list.rows,
             )
           }
-          addLabel="Add New"
+          addLabel="New project"
           showAdd={canEdit}
           onAdd={
             canEdit

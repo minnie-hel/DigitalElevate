@@ -10,6 +10,7 @@ class ProjectSerializer(serializers.ModelSerializer):
     client_name = serializers.CharField(source="client.name", read_only=True)
     status_display = serializers.CharField(source="get_status_display", read_only=True)
     priority_display = serializers.CharField(source="get_priority_display", read_only=True)
+    service_type_display = serializers.CharField(source="get_service_type_display", read_only=True)
 
     total_tasks = serializers.SerializerMethodField()
     completed_tasks = serializers.SerializerMethodField()
@@ -25,6 +26,8 @@ class ProjectSerializer(serializers.ModelSerializer):
             "client_detail",
             "name",
             "description",
+            "service_type",
+            "service_type_display",
             "start_date",
             "due_date",
             "budget",
@@ -55,6 +58,11 @@ class ProjectSerializer(serializers.ModelSerializer):
         if not total:
             return 0
         return round(self.get_completed_tasks(obj) / total * 100)
+
+    def validate_service_type(self, value):
+        if not value:
+            return Project.ServiceType.OTHER
+        return value
 
     def validate(self, attrs):
         start_date = attrs.get("start_date", getattr(self.instance, "start_date", None))

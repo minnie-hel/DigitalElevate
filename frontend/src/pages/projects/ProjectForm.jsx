@@ -7,11 +7,13 @@ import api, { apiErrorMessage } from '../../services/api.js'
 import useOptions from '../../hooks/useOptions.js'
 import useRelatedAutofill from '../../hooks/useRelatedAutofill.js'
 import { findOptionById } from '../../utils/options.js'
+import { PROJECT_SERVICE_TYPES } from './serviceTypes.js'
 
 const EMPTY = {
   client: '',
   name: '',
   description: '',
+  service_type: '',
   start_date: '',
   due_date: '',
   budget: '0',
@@ -58,6 +60,7 @@ export default function ProjectForm({ open, project, defaultClient, onClose, onS
             client: project.client || '',
             name: project.name || '',
             description: project.description || '',
+            service_type: project.service_type || 'other',
             start_date: project.start_date || '',
             due_date: project.due_date || '',
             budget: project.budget ?? '0',
@@ -116,19 +119,6 @@ export default function ProjectForm({ open, project, defaultClient, onClose, onS
 
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="sm:col-span-2">
-            <label className="label" htmlFor="name">
-              Project name
-            </label>
-            <input
-              id="name"
-              className="input"
-              placeholder="Corporate Website Development"
-              {...register('name', { required: 'Project name is required.' })}
-            />
-            {errors.name && <p className="field-error">{errors.name.message}</p>}
-          </div>
-
-          <div className="sm:col-span-2">
             <label className="label" htmlFor="client">
               Client
             </label>
@@ -150,6 +140,47 @@ export default function ProjectForm({ open, project, defaultClient, onClose, onS
               ))}
             </select>
             {errors.client && <p className="field-error">{errors.client.message}</p>}
+          </div>
+
+          <div className="sm:col-span-2">
+            <label className="label" htmlFor="name">
+              Project name
+            </label>
+            <input
+              id="name"
+              className="input"
+              placeholder="Corporate Website Development"
+              {...register('name', { required: 'Project name is required.' })}
+            />
+            {errors.name && <p className="field-error">{errors.name.message}</p>}
+          </div>
+
+          <div className="sm:col-span-2">
+            <label className="label" htmlFor="service_type">
+              Service type
+            </label>
+            <select
+              id="service_type"
+              className="input"
+              {...register('service_type', {
+                required: 'Choose the type of service for this project.',
+              })}
+            >
+              <option value="">Select service type...</option>
+              {PROJECT_SERVICE_TYPES.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+            {errors.service_type && <p className="field-error">{errors.service_type.message}</p>}
+          </div>
+
+          <div className="sm:col-span-2">
+            <label className="label" htmlFor="description">
+              Description
+            </label>
+            <textarea id="description" rows={3} className="input" {...register('description')} />
           </div>
 
           <div>
@@ -208,13 +239,6 @@ export default function ProjectForm({ open, project, defaultClient, onClose, onS
               <option value="completed">Completed</option>
               <option value="cancelled">Cancelled</option>
             </select>
-          </div>
-
-          <div className="sm:col-span-2">
-            <label className="label" htmlFor="description">
-              Description
-            </label>
-            <textarea id="description" rows={3} className="input" {...register('description')} />
           </div>
         </div>
       </form>

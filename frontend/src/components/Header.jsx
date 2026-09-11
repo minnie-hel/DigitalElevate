@@ -108,28 +108,28 @@ export default function Header({ onOpenSidebar }) {
               className="absolute right-0 mt-2 w-48 overflow-hidden rounded-lg border border-slate-200
                 bg-white py-1 shadow-lg dark:border-slate-700 dark:bg-slate-800"
             >
-            <Link
-              to="/settings"
-              onClick={() => setMenuOpen(false)}
-              className="block px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 dark:text-slate-300
-                dark:hover:bg-slate-700/80"
-              role="menuitem"
-            >
-              Settings
-            </Link>
-            <button
-              type="button"
-              onClick={() => {
-                setMenuOpen(false)
-                logout()
-              }}
-              className="block w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50
-                dark:text-red-400 dark:hover:bg-red-950/40"
-              role="menuitem"
-            >
-              Sign out
-            </button>
-          </div>
+              <Link
+                to="/settings"
+                onClick={() => setMenuOpen(false)}
+                className="block px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 dark:text-slate-300
+                  dark:hover:bg-slate-700/80"
+                role="menuitem"
+              >
+                Settings
+              </Link>
+              <button
+                type="button"
+                onClick={() => {
+                  setMenuOpen(false)
+                  logout()
+                }}
+                className="block w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50
+                  dark:text-red-400 dark:hover:bg-red-950/40"
+                role="menuitem"
+              >
+                Sign out
+              </button>
+            </div>
           )}
         </div>
       </div>
