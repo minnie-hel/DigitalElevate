@@ -26,9 +26,10 @@ RUN pip install --upgrade pip && pip install -r requirements.txt
 
 COPY backend/ .
 COPY --from=frontend /app/frontend/dist ./frontend_dist
+COPY scripts/ /app/scripts/
 
 COPY scripts/docker-entrypoint.sh /docker-entrypoint.sh
-RUN chmod +x /docker-entrypoint.sh
+RUN chmod +x /docker-entrypoint.sh /app/scripts/*.sh
 
 RUN python manage.py collectstatic --noinput
 

@@ -162,8 +162,8 @@ _DATABASE_URL = os.getenv("DATABASE_URL", "").strip()
 
 if ON_RAILWAY and (not _DATABASE_URL or _DATABASE_URL.startswith("sqlite")):
     raise ImproperlyConfigured(
-        "Railway deploy requires PostgreSQL. In the web service, add a variable reference "
-        "to the Postgres plugin DATABASE_URL (not an empty or SQLite URL), then redeploy."
+        "Railway deploy requires PostgreSQL. Open the web service → Variables → add a reference "
+        "to the PostgreSQL service DATABASE_URL, then redeploy. Without it the app cannot start."
     )
 
 DATABASES = {

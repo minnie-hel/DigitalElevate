@@ -4,11 +4,11 @@ dockerfilePath = "Dockerfile"
 # If Railway still uses Railpack, see railpack.json and start.sh at repo root.
 
 [deploy]
-healthcheckPath = "/"
+healthcheckPath = "/api/auth/setup/"
 healthcheckTimeout = 120
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 5
-startCommand = "bash scripts/railway-start.sh"
+# Do not set startCommand — the Dockerfile ENTRYPOINT runs migrate, then CMD starts gunicorn.
+# (A custom startCommand pointed at scripts/ not in the image and caused 502 Bad Gateway.)
 
-# Runs in service root; use railpack/Docker entrypoint migrate when using Dockerfile.
-releaseCommand = "bash scripts/railway-release.sh"
+releaseCommand = "cd backend && python manage.py migrate --noinput"
