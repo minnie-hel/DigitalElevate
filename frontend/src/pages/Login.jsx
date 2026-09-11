@@ -4,16 +4,17 @@ import { useForm } from 'react-hook-form'
 import Alert from '../components/Alert.jsx'
 import Logo from '../components/Logo.jsx'
 import PasswordInput from '../components/PasswordInput.jsx'
-import Spinner from '../components/Spinner.jsx'
 import { MoonIcon, SunIcon } from '../components/Icons.jsx'
 import api, { apiErrorMessage } from '../services/api.js'
 import { useAuth } from '../context/AuthContext.jsx'
 import { useTheme } from '../context/ThemeContext.jsx'
 
+const HAS_USERS_KEY = 'elevate.hasUsers'
+
 export default function Login() {
   const { login } = useAuth()
   const { isDark, toggleMode } = useTheme()
-  const [checkingSetup, setCheckingSetup] = useState(true)
+  const [setupChecked, setSetupChecked] = useState(() => sessionStorage.getItem(HAS_USERS_KEY) === '1')
   const [needsSetup, setNeedsSetup] = useState(false)
   const [error, setError] = useState('')
 
@@ -28,11 +29,22 @@ export default function Login() {
     async function loadSetupState() {
       try {
         const { data } = await api.get('/auth/setup/')
-        if (!cancelled) setNeedsSetup(Boolean(data.needs_setup))
+        if (cancelled) return
+
+        const setup = Boolean(data.needs_setup)
+        setNeedsSetup(setup)
+        if (setup) {
+          sessionStorage.removeItem(HAS_USERS_KEY)
+        } else {
+          sessionStorage.setItem(HAS_USERS_KEY, '1')
+        }
       } catch {
-        if (!cancelled) setError('Could not reach the API. Is the backend running?')
+        if (!cancelled) {
+          // If the API is unreachable, keep the sign-in form — do not assume first-time setup.
+          setNeedsSetup(false)
+        }
       } finally {
-        if (!cancelled) setCheckingSetup(false)
+        if (!cancelled) setSetupChecked(true)
       }
     }
 
@@ -57,9 +69,10 @@ export default function Login() {
         first_name: values.first_name.trim(),
         last_name: values.last_name.trim(),
       })
+      sessionStorage.setItem(HAS_USERS_KEY, '1')
+      setNeedsSetup(false)
       const result = await login(values.email.trim(), values.password)
       if (!result.ok) {
-        setNeedsSetup(false)
         setError('Account created. Sign in with the password you chose.')
       }
     } catch (requestError) {
@@ -68,6 +81,7 @@ export default function Login() {
   }
 
   const busy = signInForm.formState.isSubmitting || setupForm.formState.isSubmitting
+  const showSetup = setupChecked && needsSetup
 
   return (
     <div className="relative flex min-h-screen items-center justify-center bg-slate-900 px-4 py-12 dark:bg-slate-950">
@@ -86,20 +100,16 @@ export default function Login() {
 
           <div className="mt-5 border-t border-slate-100 pt-5 dark:border-slate-800">
             <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
-              {needsSetup ? 'Create administrator' : 'Sign in'}
+              {showSetup ? 'Create administrator' : 'Sign in'}
             </h2>
             <p className="mt-1 text-muted-xs">
-              {needsSetup
+              {showSetup
                 ? 'No accounts exist yet. Create the first administrator, then add clients and projects from the app.'
                 : 'Use your Elevate Digital work email.'}
             </p>
           </div>
 
-          {checkingSetup ? (
-            <div className="flex justify-center py-10">
-              <Spinner label="Checking system..." />
-            </div>
-          ) : needsSetup ? (
+          {showSetup ? (
             <form
               onSubmit={setupForm.handleSubmit(onSetup)}
               className="mt-6 space-y-4"

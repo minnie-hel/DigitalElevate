@@ -3,6 +3,7 @@ import { Navigate, Route, Routes } from 'react-router-dom'
 import Layout from './components/Layout.jsx'
 import Spinner from './components/Spinner.jsx'
 import { useAuth } from './context/AuthContext.jsx'
+import { tokenStore } from './services/api.js'
 
 import Login from './pages/Login.jsx'
 import Dashboard from './pages/Dashboard.jsx'
@@ -45,7 +46,7 @@ export default function App() {
       <Route
         path="/login"
         element={
-          loading ? (
+          loading && tokenStore.access ? (
             <FullPageSpinner />
           ) : isAuthenticated ? (
             <Navigate to="/" replace />
